@@ -35,8 +35,10 @@ class DatabaseHelper {
       CREATE TABLE books (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
-        author TEXT NOT NULL,
-        isRead INTEGER NOT NULL DEFAULT 0
+        authors TEXT NOT NULL,
+        isRead INTEGER NOT NULL DEFAULT 0,
+        genre TEXT,
+        notes TEXT
       )
     ''');
   }

@@ -30,10 +30,21 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Helper to turn comma-separated text into a clean List<String>
+  List<String> _parseCommaSeparatedList(String text) {
+    return text
+        .split(',')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+
   // 2. Show a dialog to add a new book
   Future<void> _showAddBookDialog() async {
     final titleController = TextEditingController();
     final authorController = TextEditingController();
+    final genreController = TextEditingController();
+    final notesController = TextEditingController();
 
     await showDialog(
       context: context,
@@ -54,6 +65,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 hintText: 'e.g. Neil Gaiman, Terry Pratchett',
               ),
             ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: genreController,
+              decoration: const InputDecoration(
+                labelText: 'Genres (comma-separated)',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: notesController,
+              decoration: const InputDecoration(
+                labelText: 'Notes (comma-separated)',
+              ),
+            ),
           ],
         ),
         actions: [
@@ -67,15 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   authorController.text.isNotEmpty) {
                 final newBook = Book(
                   title: titleController.text,
-                  authors: authorController.text
-                      .split(',')
-                      .map((author) => author.trim())
-                      .where((author) => author.isNotEmpty)
-                      .toList(),
+                  authors: _parseCommaSeparatedList(authorController.text),
+                  genre: _parseCommaSeparatedList(genreController.text),
+                  notes: _parseCommaSeparatedList(notesController.text),
                 );
 
                 Navigator.of(dialogContext).pop();
-
                 // 2. Now do the async database work
                 _saveBookAndRefresh(newBook);
               }
@@ -181,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _books.isEmpty
-          ? const Center(child: Text('No books yet. Add one!'))
+          ? const Center(child: Text("Want to add some books?"))
           : ListView.builder(
               itemCount: _books.length,
               itemBuilder: (BuildContext context, int index) {

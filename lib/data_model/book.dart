@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 class Book {
   final int? id;
   final String title;
   final List<String>? authors;
   final bool isRead;
   final List<String>? genre;
-  final Map? notes;
+  final List<String>? notes;
 
   Book({
     this.id,
@@ -28,10 +30,10 @@ class Book {
     return {
       'id': id,
       'title': title,
-      'authors': authors,
+      'authors': jsonEncode(authors),
       'isRead': isRead ? 1 : 0,
-      'genre': genre,
-      'notes': notes,
+      'genre': jsonEncode(genre),
+      'notes': jsonEncode(notes),
     };
   }
 
@@ -39,10 +41,10 @@ class Book {
     return Book(
       id: map['id'],
       title: map['title'],
-      authors: map['authors'],
+      authors: List<String>.from(jsonDecode(map['authors'])),
       isRead: map['isRead'] == 1,
-      genre: map['genre'],
-      notes: map['notes'],
+      genre: List<String>.from(jsonDecode(map['genre'])),
+      notes: List<String>.from(jsonDecode(map['notes'])),
     );
   }
 }
