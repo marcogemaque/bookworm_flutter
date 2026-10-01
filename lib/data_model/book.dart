@@ -5,10 +5,11 @@ class Book {
   final String title;
   final List<String> authors;
   final bool isRead;
-
+  final DateTime? dateStarted;
+  final DateTime? dateFinished;
   // Make these non-nullable and default to empty lists!
   final List<String> genre;
-  final List<String> notes;
+  final String? notes;
 
   Book({
     this.id,
@@ -16,18 +17,21 @@ class Book {
     required this.authors,
     this.isRead = false,
     this.genre = const [], // Defaults to empty list, never null
-    this.notes = const [], // Defaults to empty list, never null
+    this.notes, // Defaults to empty list, never null
+    this.dateStarted,
+    this.dateFinished,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'title': title,
-      // The ?? [] ensures we NEVER encode null. It will save "[]" instead of "null"
-      'authors': jsonEncode(authors ?? []),
+      'authors': jsonEncode(authors), // authors is required, so ?? [] isn't strictly needed here, but harmless
       'isRead': isRead ? 1 : 0,
-      'genre': jsonEncode(genre ?? []),
-      'notes': jsonEncode(notes ?? []),
+      'genre': jsonEncode(genre),
+      'notes': notes,
+      'dateStarted': dateStarted?.millisecondsSinceEpoch,
+      'dateFinished': dateFinished?.millisecondsSinceEpoch,
     };
   }
 
@@ -38,7 +42,14 @@ class Book {
       authors: _safeDecode(map['authors']),
       isRead: map['isRead'] == 1,
       genre: _safeDecode(map['genre']),
-      notes: _safeDecode(map['notes']),
+      notes: map['notes'],
+      // 👇 Convert INTEGER back to DateTime (or null if it doesn't exist)
+      dateStarted: map['dateStarted'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['dateStarted'] as int)
+          : null,
+      dateFinished: map['dateFinished'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['dateFinished'] as int)
+          : null,
     );
   }
 
@@ -63,7 +74,9 @@ class Book {
     List<String>? authors,
     bool? isRead,
     List<String>? genre,
-    List<String>? notes,
+    String? notes,
+    DateTime? dateStarted,
+    DateTime? dateFinished,
   }) {
     return Book(
       id: id ?? this.id,
@@ -72,6 +85,8 @@ class Book {
       isRead: isRead ?? this.isRead,
       genre: genre ?? this.genre,
       notes: notes ?? this.notes,
+      dateStarted: dateStarted ?? this.dateStarted,
+      dateFinished: dateFinished ?? this.dateFinished,
     );
   }
 }
