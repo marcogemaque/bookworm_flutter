@@ -56,8 +56,9 @@ class Book {
   // This helper safely handles SQL NULL, the string "null", and valid JSON
   static List<String> _safeDecode(dynamic value) {
     if (value == null) return []; // Handles SQL NULL
-    if (value is String && value == 'null')
+    if (value is String && value == 'null') {
       return []; // Handles the literal string "null"
+    }
 
     try {
       final decoded = jsonDecode(value);

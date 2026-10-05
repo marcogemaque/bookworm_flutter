@@ -6,7 +6,7 @@ import 'database_helper.dart';
 class BookDetailScreen extends StatefulWidget {
   final Book book;
 
-  const BookDetailScreen({Key? key, required this.book}) : super(key: key);
+  const BookDetailScreen({super.key, required this.book});
 
   @override
   _BookDetailScreenState createState() => _BookDetailScreenState();
@@ -63,7 +63,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           children: [
             // Book Metadata
             Text(
-              'By ${widget.book.authors?.join(', ') ?? 'Unknown Author'}',
+              'By ${widget.book.authors.join(', ') ?? 'Unknown Author'}',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
             const SizedBox(height: 4),

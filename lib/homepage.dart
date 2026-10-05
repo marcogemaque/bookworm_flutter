@@ -272,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _AddBookDialog extends StatefulWidget {
-  const _AddBookDialog({Key? key}) : super(key: key);
+  const _AddBookDialog();
 
   @override
   State<_AddBookDialog> createState() => _AddBookDialogState();
