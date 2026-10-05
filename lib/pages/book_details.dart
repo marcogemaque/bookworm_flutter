@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'data_model/book.dart';
-import 'database_helper.dart';
+import '../data_model/book.dart';
+import '../database_helper.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;

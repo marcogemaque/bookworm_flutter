@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'data_model/book.dart';
-import 'database_helper.dart';
+import '../data_model/book.dart';
+import 'about.dart';
+import '../database_helper.dart';
 import 'book_details.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -114,7 +115,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.question_mark),
               title: const Text('About'),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutPage()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.settings),
