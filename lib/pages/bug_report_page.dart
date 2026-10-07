@@ -4,8 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'navigation_bar.dart';
 
-import 'package:url_launcher/url_launcher.dart';
-
 class BugReportPage extends StatefulWidget {
   const BugReportPage({super.key});
 
@@ -53,7 +51,7 @@ class _BugReportPageState extends State<BugReportPage> {
     return AppScaffold(
       selectedIndex: 1,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -87,26 +85,30 @@ class _BugReportPageState extends State<BugReportPage> {
               style: GoogleFonts.lato(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 32),
-            Card(
-              color: Colors.white.withValues(alpha: 0.8),
-              child: Column(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => _sendBugReport(),
-                    icon: const Icon(Icons.email),
-                    label: const Text('Send Bug Report via Email'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+            SizedBox(
+              width: double.infinity,
+              child: Card(
+                color: Colors.white.withValues(alpha: 0.8),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
+                    child: ElevatedButton.icon(
+                      onPressed: _sendBugReport,
+                      icon: const Icon(Icons.email),
+                      label: const Text('Send Bug Report via Email'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],

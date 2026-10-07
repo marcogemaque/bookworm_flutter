@@ -12,8 +12,14 @@ import 'about.dart';
 class AppScaffold extends StatelessWidget {
   final Widget body;
   final int selectedIndex; // Used to highlight the active page in the drawer
+  final Widget? floatingActionButton;
 
-  const AppScaffold({super.key, required this.body, this.selectedIndex = -1});
+  const AppScaffold({
+    super.key,
+    required this.body,
+    this.selectedIndex = -1,
+    this.floatingActionButton,
+  });
 
   // Helper function to handle navigation cleanly
   void _navigateTo(BuildContext context, Widget page) {
@@ -59,7 +65,31 @@ class AppScaffold extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.inversePrimary,
               ),
-              child: const Text('Menu', style: TextStyle(fontSize: 24)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 12),
+                  Text(
+                    'Menu',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24.0,
+                    ), // Adds 24px of space to the right of the picture
+                    child: Image.asset(
+                      'assets/logos/resized7.png',
+                      width: 60,
+                      height: 60,
+                    ),
+                    // (Or your Icon widget if you are using that instead!)
+                  ),
+                ],
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.home),
@@ -77,15 +107,6 @@ class AppScaffold extends StatelessWidget {
               onTap: () => _navigateTo(context, const AboutPage()),
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              selected: selectedIndex == 2,
-              onTap: () => _navigateTo(
-                context,
-                const SettingsPage(),
-              ), // Replace with your actual page
-            ),
-            ListTile(
               leading: const Icon(Icons.bug_report),
               title: const Text('Bug Report'),
               selected: selectedIndex == 3,
@@ -97,7 +118,8 @@ class AppScaffold extends StatelessWidget {
           ],
         ),
       ),
-      body: body, // The unique content is injected here
+      body: body,
+      floatingActionButton: floatingActionButton,
     );
   }
 }
