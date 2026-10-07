@@ -40,7 +40,7 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              "While I love reading, I wanted a single place to store all the notes I take per book. Now you can as well..\n\n No AI.",
+              "While I love reading, I wanted a single place to store all the notes I take per book. Now you can as well.\n\n No AI.",
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(fontSize: 16, height: 1.5),
             ),

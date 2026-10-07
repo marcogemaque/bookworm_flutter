@@ -258,7 +258,7 @@ class _AddBookDialogState extends State<_AddBookDialog> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: DateTime(2000),
+      firstDate: DateTime(1900),
       lastDate: DateTime(2100),
       helpText: isStart
           ? 'When did you start this book?'
