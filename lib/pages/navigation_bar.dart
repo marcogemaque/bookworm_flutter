@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:bookworm/pages/homepage.dart';
 
 // my other pages
-import 'settings_page.dart';
 import 'bug_report_page.dart';
 import 'about.dart';
 
