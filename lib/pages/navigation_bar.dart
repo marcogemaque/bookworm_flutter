@@ -81,7 +81,7 @@ class AppScaffold extends StatelessWidget {
                       left: 24.0,
                     ), // Adds 24px of space to the right of the picture
                     child: Image.asset(
-                      'assets/logos/resized7.png',
+                      'assets/logos/resized8.png',
                       width: 60,
                       height: 60,
                     ),
