@@ -10,6 +10,8 @@ class Book {
   // Make these non-nullable and default to empty lists!
   final List<String> genre;
   final String? notes;
+  //ratings for
+  final int? rating;
 
   Book({
     this.id,
@@ -20,6 +22,7 @@ class Book {
     this.notes, // Defaults to empty list, never null
     this.dateStarted,
     this.dateFinished,
+    this.rating,
   });
 
   Map<String, dynamic> toMap() {
@@ -30,6 +33,7 @@ class Book {
       'isRead': isRead ? 1 : 0,
       'genre': jsonEncode(genre),
       'notes': notes,
+      'rating': rating,
       'dateStarted': dateStarted?.millisecondsSinceEpoch,
       'dateFinished': dateFinished?.millisecondsSinceEpoch,
     };
@@ -43,7 +47,8 @@ class Book {
       isRead: map['isRead'] == 1,
       genre: _safeDecode(map['genre']),
       notes: map['notes'],
-      // 👇 Convert INTEGER back to DateTime (or null if it doesn't exist)
+      rating: map['rating'],
+      //Convert INTEGER back to DateTime (or null if it doesn't exist)
       dateStarted: map['dateStarted'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['dateStarted'] as int)
           : null,
@@ -76,6 +81,7 @@ class Book {
     bool? isRead,
     List<String>? genre,
     String? notes,
+    int? rating,
     DateTime? dateStarted,
     DateTime? dateFinished,
   }) {
@@ -86,6 +92,7 @@ class Book {
       isRead: isRead ?? this.isRead,
       genre: genre ?? this.genre,
       notes: notes ?? this.notes,
+      rating: rating ?? this.rating,
       dateStarted: dateStarted ?? this.dateStarted,
       dateFinished: dateFinished ?? this.dateFinished,
     );

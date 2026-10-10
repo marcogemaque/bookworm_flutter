@@ -20,6 +20,7 @@ class EditBookDialogState extends State<EditBookDialog> {
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
   late bool _isRead;
+  late int _rating; // Added: to track the 0-5 star rating
 
   @override
   void initState() {
@@ -36,6 +37,8 @@ class EditBookDialogState extends State<EditBookDialog> {
     _selectedStartDate = widget.book.dateStarted;
     _selectedEndDate = widget.book.dateFinished;
     _isRead = widget.book.isRead;
+    _rating =
+        widget.book.rating ?? 0; // Added: initialize rating (0 means unrated)
   }
 
   @override
@@ -119,6 +122,7 @@ class EditBookDialogState extends State<EditBookDialog> {
       dateStarted: _selectedStartDate,
       dateFinished: _selectedEndDate,
       isRead: _isRead,
+      rating: _rating == 0 ? null : _rating, // Added: pass updated rating
     );
 
     await DatabaseHelper.instance.updateBook(updatedBook);
@@ -159,7 +163,6 @@ class EditBookDialogState extends State<EditBookDialog> {
               ),
             ),
             const SizedBox(height: 10),
-
             // Date Started
             InkWell(
               onTap: () => _pickDate(true),
@@ -199,7 +202,6 @@ class EditBookDialogState extends State<EditBookDialog> {
               ),
             ),
             const SizedBox(height: 10),
-
             // Date Finished
             InkWell(
               onTap: () => _pickDate(false),
@@ -238,6 +240,29 @@ class EditBookDialogState extends State<EditBookDialog> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Rating',
+              style: TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return IconButton(
+                  icon: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.black87,
+                    size: 36,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      // Toggle off if the same star is tapped, otherwise set to the tapped star's value
+                      _rating = (index + 1 == _rating) ? 0 : index + 1;
+                    });
+                  },
+                );
+              }),
+            ),
             const SizedBox(height: 10),
             TextField(
               controller: _notesController,
@@ -245,18 +270,20 @@ class EditBookDialogState extends State<EditBookDialog> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-
-            // Read Status Toggle
             Row(
               children: [
                 const Text(
                   'Mark as Read',
-                  style: TextStyle(fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                 ),
                 const Spacer(),
                 Switch(
                   value: _isRead,
-                  activeThumbColor: Colors.green,
+                  activeThumbColor:
+                      Colors.green, // Updated from deprecated activeThumbColor
                   onChanged: (value) => setState(() => _isRead = value),
                 ),
               ],
@@ -267,7 +294,7 @@ class EditBookDialogState extends State<EditBookDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
         ),
         ElevatedButton(
           onPressed: _saveChanges,

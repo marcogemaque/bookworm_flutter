@@ -13,10 +13,11 @@ class AddBookDialogState extends State<AddBookDialog> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
   final TextEditingController _genreController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
 
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
+
+  int _rating = 0; // Added: 0 means no rating, 1-5 for stars
 
   // Flutter automatically calls this when the dialog is fully closed and removed
   @override
@@ -24,7 +25,6 @@ class AddBookDialogState extends State<AddBookDialog> {
     _titleController.dispose();
     _authorController.dispose();
     _genreController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -110,6 +110,29 @@ class AddBookDialogState extends State<AddBookDialog> {
                 labelText: 'Genres (comma-separated)',
               ),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Rating',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return IconButton(
+                  icon: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 36,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      // Toggle off if the same star is tapped, otherwise set to the tapped star's value
+                      _rating = (index + 1 == _rating) ? 0 : index + 1;
+                    });
+                  },
+                );
+              }),
+            ),
             const SizedBox(height: 10),
             InkWell(
               onTap: () => _pickDate(true),
@@ -186,12 +209,6 @@ class AddBookDialogState extends State<AddBookDialog> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
-              maxLines: 3,
-            ),
           ],
         ),
       ),
@@ -208,13 +225,10 @@ class AddBookDialogState extends State<AddBookDialog> {
                 title: _titleController.text,
                 authors: _parseCommaSeparatedList(_authorController.text),
                 genre: _parseCommaSeparatedList(_genreController.text),
-                notes: _notesController.text.isNotEmpty
-                    ? _notesController.text
-                    : null,
                 dateStarted: _selectedStartDate,
                 dateFinished: _selectedEndDate,
+                rating: _rating == 0 ? null : _rating,
               );
-
               // Pass the fully built Book object back to the parent!
               Navigator.of(context).pop(newBook);
             }
