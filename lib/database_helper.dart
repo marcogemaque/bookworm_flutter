@@ -38,6 +38,7 @@ class DatabaseHelper {
         authors TEXT NOT NULL,
         isRead INTEGER NOT NULL DEFAULT 0,
         genre TEXT,
+        rating INTEGER,
         notes TEXT,
         dateStarted INTEGER,
         dateFinished INTEGER

@@ -172,9 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               Expanded(
                 child: Text(
-                  book.authors.join(
-                    ', ',
-                  ), // Removed ?. since your model requires it
+                  book.authors.join(', '),
                   style: TextStyle(
                     fontSize: 13,
                     color: book.isRead ? Colors.grey.shade500 : Colors.black54,
@@ -192,13 +190,48 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.grey,
                   ),
                 ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Checkbox(
-                  value: book.isRead,
-                  onChanged: (value) => _toggleReadStatus(book),
-                  activeColor: Theme.of(context).primaryColor,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  book.rating != null && book.rating! > 0
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${book.rating}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: book.isRead
+                                    ? Colors.grey.shade500
+                                    : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            const Icon(
+                              Icons.star,
+                              size: 14,
+                              color: Colors.amber,
+                            ),
+                          ],
+                        )
+                      : Text(
+                          'Unrated',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: book.isRead
+                                ? Colors.grey.shade500
+                                : Colors.black54,
+                          ),
+                        ),
+                  Checkbox(
+                    value: book.isRead,
+                    onChanged: (value) => _toggleReadStatus(book),
+                    activeColor: Theme.of(context).primaryColor,
+                  ),
+                ],
               ),
             ],
           ),
