@@ -88,7 +88,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                       : null,
                 );
                 await DatabaseHelper.instance.deleteBook(updatedBook);
-                if (mounted) {
+                if (context.mounted) {
                   Navigator.pop(context, true);
                 }
               }
@@ -105,7 +105,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                     : null,
               );
               await DatabaseHelper.instance.updateBook(updatedBook);
-              if (mounted) {
+              if (context.mounted) {
                 Navigator.pop(context, true);
               }
             },
@@ -119,8 +119,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                 context: context,
                 builder: (dialogContext) => EditBookDialog(book: widget.book),
               );
-
-              if (didChange == true && mounted) {
+              if (didChange == true && context.mounted) {
                 Navigator.pop(context, true);
               }
             },
