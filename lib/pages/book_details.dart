@@ -35,7 +35,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Nice soft background color
-      backgroundColor: Colors.orange.shade200,
+      backgroundColor: Colors.orange.shade100,
 
       appBar: AppBar(
         title: Text(
