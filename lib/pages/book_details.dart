@@ -35,7 +35,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Nice soft background color
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: Colors.orange.shade200,
 
       appBar: AppBar(
         title: Text(
@@ -43,14 +43,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.grey.shade100, // Blends with background
+        backgroundColor: Color(0xFFFDB975),
         foregroundColor: Colors.black87,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         actions: [
           // DELETE BOOK BUTTON
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
+            icon: const Icon(Icons.delete, color: Colors.black),
             tooltip: 'Delete Book',
             onPressed: () async {
               // 1. Show the confirmation dialog
@@ -96,7 +96,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ),
           // SAVE NOTES BUTTON
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: const Icon(Icons.save, color: Colors.white),
             tooltip: 'Save Notes',
             onPressed: () async {
               final updatedBook = widget.book.copyWith(
@@ -112,7 +112,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ),
           // EDIT BOOK DETAILS BUTTON
           IconButton(
-            icon: const Icon(Icons.edit_outlined),
+            icon: const Icon(Icons.edit_outlined, color: Colors.white),
             tooltip: 'Edit Book Details',
             onPressed: () async {
               final didChange = await showDialog<bool>(
@@ -163,13 +163,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
                   hintText: 'I bet you found lots to remember about this book!',
-                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  hintStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.white, // Pops against the gray background
+                  fillColor: Colors.orange.shade50,
                 ),
               ),
             ),
