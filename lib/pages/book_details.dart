@@ -13,10 +13,10 @@ class BookDetailScreen extends StatefulWidget {
   const BookDetailScreen({super.key, required this.book});
 
   @override
-  _BookDetailScreenState createState() => _BookDetailScreenState();
+  BookDetailScreenState createState() => BookDetailScreenState();
 }
 
-class _BookDetailScreenState extends State<BookDetailScreen> {
+class BookDetailScreenState extends State<BookDetailScreen> {
   late TextEditingController _notesController;
 
   @override

@@ -34,15 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Helper to turn comma-separated text into a clean List<String>
-  List<String> _parseCommaSeparatedList(String text) {
-    return text
-        .split(',')
-        .map((item) => item.trim())
-        .where((item) => item.isNotEmpty)
-        .toList();
-  }
-
   // 👇 SIMPLIFIED: Now just calls the extracted dialog widget
   Future<void> _showAddBookDialog() async {
     final Book? newBook = await showDialog<Book>(

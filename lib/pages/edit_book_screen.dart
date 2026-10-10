@@ -5,7 +5,7 @@ import '/database_helper.dart';
 
 class EditBookDialog extends StatefulWidget {
   final Book book;
-  const EditBookDialog({required this.book});
+  const EditBookDialog({super.key, required this.book});
 
   @override
   State<EditBookDialog> createState() => EditBookDialogState();
@@ -30,7 +30,7 @@ class EditBookDialogState extends State<EditBookDialog> {
       text: widget.book.authors.join(', '),
     );
     _genreController = TextEditingController(
-      text: widget.book.genre?.join(', ') ?? '',
+      text: widget.book.genre.join(', '),
     );
     _notesController = TextEditingController(text: widget.book.notes ?? '');
     _selectedStartDate = widget.book.dateStarted;

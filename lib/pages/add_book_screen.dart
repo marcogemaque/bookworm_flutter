@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'navigation_bar.dart';
-
 import '../data_model/book.dart';
-import '../database_helper.dart';
-import 'book_details.dart';
 
 class AddBookDialog extends StatefulWidget {
-  const AddBookDialog();
+  const AddBookDialog({super.key});
 
   @override
   State<AddBookDialog> createState() => AddBookDialogState();
