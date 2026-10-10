@@ -55,7 +55,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleReadStatus(Book book) async {
-    final updatedBook = book.copyWith(isRead: !book.isRead);
+    final bool newIsReadStatus = !book.isRead;
+    final DateTime? newReadDate = newIsReadStatus ? DateTime.now() : null;
+    final updatedBook = book.copyWith(
+      isRead: newIsReadStatus,
+      dateFinished: newReadDate,
+    );
     await DatabaseHelper.instance.updateBook(updatedBook);
     if (mounted) {
       _loadBooks();
@@ -238,7 +243,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                   Checkbox(
                     value: book.isRead,
-                    onChanged: (value) => _toggleReadStatus(book),
+                    onChanged: (bool? newValue) {
+                      if (newValue != null) {
+                        // Pass the book and the new boolean value
+                        _toggleReadStatus(book);
+                      }
+                    },
                     activeColor: Theme.of(context).primaryColor,
                   ),
                 ],
