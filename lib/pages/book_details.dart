@@ -161,7 +161,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
-                  hintText: 'I bet you found lots to remember about this book!',
+                  hintText: 'Add your notes here!',
                   hintStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

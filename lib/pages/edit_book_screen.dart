@@ -136,7 +136,7 @@ class EditBookDialogState extends State<EditBookDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color.fromARGB(255, 209, 153, 20),
+      backgroundColor: const Color.fromARGB(255, 226, 211, 176),
       surfaceTintColor: Colors.transparent,
       title: const Text('Edit Book Details'),
       content: SingleChildScrollView(
@@ -251,7 +251,7 @@ class EditBookDialogState extends State<EditBookDialog> {
                 return IconButton(
                   icon: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: Colors.black87,
+                    color: Color.fromARGB(255, 180, 138, 39),
                     size: 36,
                   ),
                   onPressed: () {

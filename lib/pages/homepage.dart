@@ -169,17 +169,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Text(
-                  book.authors.join(', '),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: book.isRead ? Colors.grey.shade500 : Colors.black54,
-                  ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 5),
+              Text(
+                book.authors.join(', '),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: book.isRead ? Colors.black54 : Colors.black54,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                book.genre.join(', '),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: book.isRead
+                      ? Colors.grey.shade500
+                      : Colors.grey.shade500,
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
               ),
               if (book.notes != null && book.notes!.isNotEmpty)
                 const Padding(
@@ -190,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.grey,
                   ),
                 ),
+              const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,

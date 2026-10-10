@@ -99,16 +99,13 @@ class AddBookDialogState extends State<AddBookDialog> {
             TextField(
               controller: _authorController,
               decoration: const InputDecoration(
-                labelText: 'Authors (comma-separated)',
-                hintText: 'e.g. Neil Gaiman, Terry Pratchett',
+                labelText: 'Author 1, Author 2',
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _genreController,
-              decoration: const InputDecoration(
-                labelText: 'Genres (comma-separated)',
-              ),
+              decoration: const InputDecoration(labelText: 'Sci-Fi, Horror'),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -121,7 +118,7 @@ class AddBookDialogState extends State<AddBookDialog> {
                 return IconButton(
                   icon: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
+                    color: Color.fromARGB(255, 180, 138, 39),
                     size: 36,
                   ),
                   onPressed: () {
