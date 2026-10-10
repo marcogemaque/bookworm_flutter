@@ -47,6 +47,58 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         actions: [
+          // DELETE BOOK BUTTON
+          IconButton(
+            icon: const Icon(
+              Icons.delete,
+              color: Colors.red,
+            ), // Optional: make it red to indicate danger
+            tooltip: 'Delete Book',
+            onPressed: () async {
+              // 1. Show the confirmation dialog
+              final bool? confirmDelete = await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Delete Book'),
+                    content: const Text(
+                      'Are you sure you want to delete this book? This action cannot be undone.',
+                    ),
+                    actions: <Widget>[
+                      // Cancel button
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      // Confirm delete button
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              // 2. Proceed only if the user explicitly tapped "Delete" (returns true)
+              if (confirmDelete == true) {
+                final updatedBook = widget.book.copyWith(
+                  notes: _notesController.text.trim().isNotEmpty
+                      ? _notesController.text.trim()
+                      : null,
+                );
+
+                await DatabaseHelper.instance.deleteBook(updatedBook);
+
+                if (mounted) {
+                  Navigator.pop(context, true);
+                }
+              }
+            },
+          ),
           // SAVE NOTES BUTTON
           IconButton(
             icon: const Icon(Icons.save),
