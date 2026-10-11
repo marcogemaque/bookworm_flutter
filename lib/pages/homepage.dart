@@ -24,6 +24,17 @@ class _HomeScreenState extends State<HomeScreen> {
   BookSortOption _readingNowSort = BookSortOption.titleAsc;
   BookSortOption _readSort = BookSortOption.titleAsc;
 
+  List<int> get _readYears {
+    final years =
+        _books
+            .where((book) => book.isRead && book.dateFinished != null)
+            .map((book) => book.dateFinished!.year)
+            .toSet()
+            .toList()
+          ..sort();
+    return years;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -60,7 +71,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleReadStatus(Book book) async {
     final bool newIsReadStatus = !book.isRead;
-    final DateTime? newReadDate = newIsReadStatus ? DateTime.now() : null;
+    // we're not saving the exact timestamp, but rather just the date. We only care about the year
+    final DateTime? newReadDate = newIsReadStatus
+        ? DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+          )
+        : null;
+
     final updatedBook = book.copyWith(
       isRead: newIsReadStatus,
       dateFinished: newReadDate,
@@ -77,13 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
     sorted.sort((a, b) {
       switch (option) {
         case BookSortOption.titleAsc:
-          return (a.title ?? '').toLowerCase().compareTo(
-            (b.title ?? '').toLowerCase(),
-          );
+          return (a.title).toLowerCase().compareTo((b.title).toLowerCase());
         case BookSortOption.titleDesc:
-          return (b.title ?? '').toLowerCase().compareTo(
-            (a.title ?? '').toLowerCase(),
-          );
+          return (b.title).toLowerCase().compareTo((a.title).toLowerCase());
         case BookSortOption.authorAsc:
           final authorA = a.authors.isEmpty
               ? ''
@@ -103,6 +118,12 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     return sorted;
+  }
+
+  String _formatYearsSubtitle(List<int> years) {
+    if (years.isEmpty) return '';
+    if (years.length == 1) return '${years.first}';
+    return '${years.first} – ${years.last}';
   }
 
   @override
@@ -145,9 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
         ],
         if (read.isNotEmpty) ...[
-          _buildSectionHeader('Read', _readSort, (newSort) {
-            setState(() => _readSort = newSort);
-          }),
+          _buildSectionHeader(
+            'Read',
+            _readSort,
+            (newSort) => setState(() => _readSort = newSort),
+            subtitle: _formatYearsSubtitle(_readYears),
+          ),
           const SizedBox(height: 8),
           _buildBookGrid(read),
           const SizedBox(height: 16),
@@ -156,24 +180,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 5. Updated header to include a PopupMenuButton for sorting
+  // Headeer for Read Books and Is Reading, plus the sorting
   Widget _buildSectionHeader(
     String title,
     BookSortOption currentSort,
-    ValueChanged<BookSortOption> onSortChanged,
-  ) {
+    ValueChanged<BookSortOption> onSortChanged, {
+    String? subtitle,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              if (subtitle != null && subtitle.isNotEmpty)
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 18, // Same font size as title
+                    color: Colors.grey, // Grey instead of black
+                  ),
+                ),
+            ],
           ),
           PopupMenuButton<BookSortOption>(
             icon: const Icon(Icons.sort, color: Colors.black54),

@@ -81,4 +81,29 @@ class DatabaseHelper {
       whereArgs: [book.id],
     );
   }
+
+  // NEW: Get unique years when books were finished
+  Future<List<int>> getReadYears() async {
+    final db = await database;
+
+    // Fetch distinct timestamps where the book is finished and marked as read
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT DISTINCT dateFinished FROM books WHERE dateFinished IS NOT NULL AND isRead = 1',
+    );
+
+    final Set<int> years = {};
+    for (var map in maps) {
+      final timestamp = map['dateFinished'] as int?;
+      if (timestamp != null && timestamp > 0) {
+        // Convert milliseconds timestamp to DateTime and extract the year
+        // (If your app stores seconds instead of milliseconds, use: timestamp * 1000)
+        final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        years.add(date.year);
+      }
+    }
+
+    // Return sorted list of unique years (e.g., [2023, 2024, 2026])
+    final sortedYears = years.toList()..sort();
+    return sortedYears;
+  }
 }
