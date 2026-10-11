@@ -24,17 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   BookSortOption _readingNowSort = BookSortOption.titleAsc;
   BookSortOption _readSort = BookSortOption.titleAsc;
 
-  List<int> get _readYears {
-    final years =
-        _books
-            .where((book) => book.isRead && book.dateFinished != null)
-            .map((book) => book.dateFinished!.year)
-            .toSet()
-            .toList()
-          ..sort();
-    return years;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -79,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 3. Added helper method to sort books based on the selected option
+  // 3. Helper method to sort books based on the selected option
   List<Book> _sortBooks(List<Book> books, BookSortOption option) {
     final sorted = List<Book>.from(books);
     sorted.sort((a, b) {
@@ -109,10 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return sorted;
   }
 
-  String _formatYearsSubtitle(List<int> years) {
-    if (years.isEmpty) return '';
-    if (years.length == 1) return '${years.first}';
-    return '${years.first} – ${years.last}';
+  // 4. NEW: Helper method to group books by year
+  Map<String, List<Book>> _groupBooksByYear(List<Book> books) {
+    final Map<String, List<Book>> grouped = {};
+    for (final book in books) {
+      final yearStr = book.dateFinished != null
+          ? book.dateFinished!.year.toString()
+          : 'Unknown';
+      if (!grouped.containsKey(yearStr)) {
+        grouped[yearStr] = [];
+      }
+      grouped[yearStr]!.add(book);
+    }
+    return grouped;
   }
 
   @override
@@ -133,15 +131,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBookSections() {
-    // 4. Apply sorting to the filtered lists
     final readingNow = _sortBooks(
       _books.where((book) => !book.isRead).toList(),
       _readingNowSort,
     );
+
+    // Sort all read books first, so they maintain order when grouped by year
     final read = _sortBooks(
       _books.where((book) => book.isRead).toList(),
       _readSort,
     );
+
+    // Group read books by year
+    final readGroupedByYear = _groupBooksByYear(read);
+
+    // Sort years descending, putting 'Unknown' at the very end
+    final years = readGroupedByYear.keys.toList();
+    years.sort((a, b) {
+      if (a == 'Unknown') return 1;
+      if (b == 'Unknown') return -1;
+      return int.parse(b)
+          .compareTo(int.parse(a)); // Descending order (e.g., 2026, 2025)
+    });
 
     return ListView(
       padding: const EdgeInsets.all(12.0),
@@ -159,17 +170,20 @@ class _HomeScreenState extends State<HomeScreen> {
             'Read',
             _readSort,
             (newSort) => setState(() => _readSort = newSort),
-            subtitle: _formatYearsSubtitle(_readYears),
           ),
-          const SizedBox(height: 8),
-          _buildBookGrid(read),
           const SizedBox(height: 16),
+          // Iterate through each year and build a subgroup
+          for (final year in years) ...[
+            _buildYearSubHeader(year),
+            _buildBookGrid(readGroupedByYear[year]!),
+            const SizedBox(height: 24),
+          ],
         ],
       ],
     );
   }
 
-  // Headeer for Read Books and Is Reading, plus the sorting
+  // Header for Read Books and Is Reading, plus the sorting
   Widget _buildSectionHeader(
     String title,
     BookSortOption currentSort,
@@ -195,10 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (subtitle != null && subtitle.isNotEmpty)
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    fontSize: 18, // Same font size as title
-                    color: Colors.grey, // Grey instead of black
-                  ),
+                  style: const TextStyle(fontSize: 18, color: Colors.grey),
                 ),
             ],
           ),
@@ -227,6 +238,21 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // NEW: Helper for year subheaders
+  Widget _buildYearSubHeader(String year) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+      child: Text(
+        year,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
       ),
     );
   }
