@@ -4,6 +4,8 @@ import '/data_model/book.dart';
 import '/database_helper.dart';
 import '/pages/edit_book_screen.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 // ==========================================
 // 1. THE MAIN DETAIL SCREEN
 // ==========================================
@@ -133,10 +135,10 @@ class BookDetailScreenState extends State<BookDetailScreen> {
           children: [
             Text(
               'By ${widget.book.authors.join(', ')}',
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              style: GoogleFonts.playfairDisplay(
+                // Replace 'poppins' with your chosen font
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 4),
@@ -148,10 +150,14 @@ class BookDetailScreenState extends State<BookDetailScreen> {
               ),
             ),
             const Divider(height: 32),
-
-            const Text(
+            Text(
+              // 'const' is removed
               'My Notes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.playfairDisplay(
+                // Replace 'poppins' with your chosen font
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(
