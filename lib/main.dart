@@ -13,12 +13,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Bookworm',
-      // We can still set a base theme here if we want
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
-      home: const HomeScreen(), // Points to our merged screen
+      home: const HomeScreen(),
     );
   }
 }

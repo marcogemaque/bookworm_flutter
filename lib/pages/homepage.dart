@@ -71,19 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleReadStatus(Book book) async {
     final bool newIsReadStatus = !book.isRead;
-    // we're not saving the exact timestamp, but rather just the date. We only care about the year
-    final DateTime? newReadDate = newIsReadStatus
-        ? DateTime(
-            DateTime.now().year,
-            DateTime.now().month,
-            DateTime.now().day,
-          )
-        : null;
 
-    final updatedBook = book.copyWith(
-      isRead: newIsReadStatus,
-      dateFinished: newReadDate,
-    );
+    final updatedBook = book.copyWith(isRead: newIsReadStatus);
     await DatabaseHelper.instance.updateBook(updatedBook);
     if (mounted) {
       _loadBooks();
