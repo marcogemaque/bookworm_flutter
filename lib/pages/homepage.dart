@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'navigation_bar.dart';
-
 import '../data_model/book.dart';
 import '../database_helper.dart';
 import 'book_details.dart';
 import '/pages/add_book_screen.dart';
+
+// 1. Added Sort Options Enum
+enum BookSortOption { titleAsc, titleDesc, authorAsc, authorDesc }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Book> _books = [];
   bool _isLoading = true;
+
+  // 2. Added state variables to track sort order for each section
+  BookSortOption _readingNowSort = BookSortOption.titleAsc;
+  BookSortOption _readSort = BookSortOption.titleAsc;
 
   @override
   void initState() {
@@ -34,14 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 👇 SIMPLIFIED: Now just calls the extracted dialog widget
   Future<void> _showAddBookDialog() async {
     final Book? newBook = await showDialog<Book>(
       context: context,
       builder: (dialogContext) => const AddBookDialog(),
     );
 
-    // If the user saved a book, refresh the list
     if (newBook != null && mounted) {
       _saveBookAndRefresh(newBook);
     }
@@ -67,6 +71,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // 3. Added helper method to sort books based on the selected option
+  List<Book> _sortBooks(List<Book> books, BookSortOption option) {
+    final sorted = List<Book>.from(books);
+    sorted.sort((a, b) {
+      switch (option) {
+        case BookSortOption.titleAsc:
+          return (a.title ?? '').toLowerCase().compareTo(
+            (b.title ?? '').toLowerCase(),
+          );
+        case BookSortOption.titleDesc:
+          return (b.title ?? '').toLowerCase().compareTo(
+            (a.title ?? '').toLowerCase(),
+          );
+        case BookSortOption.authorAsc:
+          final authorA = a.authors.isEmpty
+              ? ''
+              : a.authors.join(', ').toLowerCase();
+          final authorB = b.authors.isEmpty
+              ? ''
+              : b.authors.join(', ').toLowerCase();
+          return authorA.compareTo(authorB);
+        case BookSortOption.authorDesc:
+          final authorA = a.authors.isEmpty
+              ? ''
+              : a.authors.join(', ').toLowerCase();
+          final authorB = b.authors.isEmpty
+              ? ''
+              : b.authors.join(', ').toLowerCase();
+          return authorB.compareTo(authorA);
+      }
+    });
+    return sorted;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -85,20 +123,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBookSections() {
-    final readingNow = _books.where((book) => !book.isRead).toList();
-    final read = _books.where((book) => book.isRead).toList();
+    // 4. Apply sorting to the filtered lists
+    final readingNow = _sortBooks(
+      _books.where((book) => !book.isRead).toList(),
+      _readingNowSort,
+    );
+    final read = _sortBooks(
+      _books.where((book) => book.isRead).toList(),
+      _readSort,
+    );
 
     return ListView(
       padding: const EdgeInsets.all(12.0),
       children: [
         if (readingNow.isNotEmpty) ...[
-          _buildSectionHeader('Reading Now'),
+          _buildSectionHeader('Reading Now', _readingNowSort, (newSort) {
+            setState(() => _readingNowSort = newSort);
+          }),
           const SizedBox(height: 8),
           _buildBookGrid(readingNow),
           const SizedBox(height: 24),
         ],
         if (read.isNotEmpty) ...[
-          _buildSectionHeader('Read'),
+          _buildSectionHeader('Read', _readSort, (newSort) {
+            setState(() => _readSort = newSort);
+          }),
           const SizedBox(height: 8),
           _buildBookGrid(read),
           const SizedBox(height: 16),
@@ -107,16 +156,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  // 5. Updated header to include a PopupMenuButton for sorting
+  Widget _buildSectionHeader(
+    String title,
+    BookSortOption currentSort,
+    ValueChanged<BookSortOption> onSortChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          PopupMenuButton<BookSortOption>(
+            icon: const Icon(Icons.sort, color: Colors.black54),
+            tooltip: 'Sort books',
+            initialValue: currentSort,
+            onSelected: onSortChanged,
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: BookSortOption.titleAsc,
+                child: Text('Title (A-Z)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.titleDesc,
+                child: Text('Title (Z-A)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.authorAsc,
+                child: Text('Author (A-Z)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.authorDesc,
+                child: Text('Author (Z-A)'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -245,7 +328,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: book.isRead,
                     onChanged: (bool? newValue) {
                       if (newValue != null) {
-                        // Pass the book and the new boolean value
                         _toggleReadStatus(book);
                       }
                     },
