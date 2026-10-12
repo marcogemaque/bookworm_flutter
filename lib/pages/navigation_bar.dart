@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // my main page
 import 'package:bookworm/pages/homepage.dart';
+import 'package:bookworm/pages/summary.dart';
 
 // my other pages
 import 'bug_report_page.dart';
@@ -92,11 +93,20 @@ class AppScaffold extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.home),
-              title: const Text('Dashboard'),
+              title: const Text('My Books'),
               selected: selectedIndex == 0,
               onTap: () => _navigateTo(
                 context,
                 const HomeScreen(),
+              ), // Replace with your actual page
+            ),
+            ListTile(
+              leading: const Icon(Icons.summarize),
+              title: const Text('Dashboard'),
+              selected: selectedIndex == 0,
+              onTap: () => _navigateTo(
+                context,
+                const SummaryScreen(),
               ), // Replace with your actual page
             ),
             ListTile(

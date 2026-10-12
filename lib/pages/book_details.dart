@@ -167,7 +167,8 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
-                  hintText: 'Add your notes here!',
+                  hintText:
+                      'To persist your notes, click on the save button above!',
                   hintStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
