@@ -6,6 +6,7 @@
             <data android:scheme="mailto" />
         </intent>
     </queries>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- END OF BLOCK -->
     <application
         android:label="bookworm"
