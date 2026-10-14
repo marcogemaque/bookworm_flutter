@@ -6,6 +6,8 @@ import '../database_helper.dart';
 import 'book_details.dart';
 import '/pages/add_book_screen.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
+
 // 1. Added Sort Options Enum
 enum BookSortOption { titleAsc, titleDesc, authorAsc, authorDesc }
 
@@ -111,6 +113,51 @@ class _HomeScreenState extends State<HomeScreen> {
       grouped[yearStr]!.add(book);
     }
     return grouped;
+  }
+
+  Widget _buildCoverPreview(
+    String? coverUrl, {
+    double width = 50,
+    double height = 70,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(
+          6,
+        ), // Slightly tighter radius for small images
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: coverUrl != null && coverUrl.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: coverUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                errorWidget: (context, url, error) => const Center(
+                  child: Icon(
+                    Icons.book,
+                    size: 24,
+                    color: Colors.grey,
+                  ), // Smaller icon fallback
+                ),
+              )
+            : const Center(
+                child: Icon(Icons.book, size: 24, color: Colors.grey),
+              ),
+      ),
+    );
   }
 
   @override
@@ -299,48 +346,58 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 1. TITLE (TOP)
               Text(
                 book.title,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 15,
                   decoration: book.isRead ? TextDecoration.lineThrough : null,
                   color: book.isRead ? Colors.grey : Colors.black87,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 4),
+
+              // 2. AUTHOR
               Text(
                 book.authors.join(', '),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: book.isRead ? Colors.black54 : Colors.black54,
-                ),
-                maxLines: 2,
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                book.genre.join(', '),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: book.isRead
-                      ? Colors.grey.shade500
-                      : Colors.grey.shade500,
+
+              // 3. GENRE
+              if (book.genre.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  book.genre.join(', '),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
+              ],
+
+              const SizedBox(height: 6),
+              // COVER IMAGE (MIDDLE)
+              _buildCoverPreview(book.coverUrl),
+              // NOTES INDICATOR
               if (book.notes != null && book.notes!.isNotEmpty)
                 const Padding(
-                  padding: EdgeInsets.only(bottom: 4.0),
+                  padding: EdgeInsets.only(top: 8.0, bottom: 4.0),
                   child: Icon(
                     Icons.notes_outlined,
                     size: 16,
                     color: Colors.grey,
                   ),
                 ),
-              const Spacer(),
+              const Spacer(), // Pushes the bottom row all the way down
+              //RATING AND CHECKBOX (BOTTOM)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -352,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               '${book.rating}',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: book.isRead
                                     ? Colors.grey.shade500
@@ -370,7 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : Text(
                           'Unrated',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontStyle: FontStyle.italic,
                             color: book.isRead
                                 ? Colors.grey.shade500
@@ -385,6 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                     activeColor: Theme.of(context).primaryColor,
+                    visualDensity: VisualDensity.compact,
                   ),
                 ],
               ),

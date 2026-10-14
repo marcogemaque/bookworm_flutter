@@ -20,11 +20,12 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   List<String> funnySentences = [
     "Lord Read-a-Lot over here!",
-    "Quick, Officer, they're reading too much!",
+    "Officer, they're reading too much!",
     "SuperReader legend!",
     "It ain't easy reading this much.",
     "Seomeong's got super eyes!",
-    "Are you sure you're paying attention?",
+    "Man, you're good at reading!",
+    "Book-a-licious",
   ];
 
   @override

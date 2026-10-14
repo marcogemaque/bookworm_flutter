@@ -41,7 +41,8 @@ class DatabaseHelper {
         rating INTEGER,
         notes TEXT,
         dateStarted INTEGER,
-        dateFinished INTEGER
+        dateFinished INTEGER,
+        coverUrl TEXT
       )
     ''');
   }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'dart:convert';
 
 import '../data_model/book.dart';
 
@@ -17,9 +20,9 @@ class AddBookDialogState extends State<AddBookDialog> {
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
 
-  int _rating = 0; // Added: 0 means no rating, 1-5 for stars
+  int _rating = 0;
+  bool _isLoading = false;
 
-  // Flutter automatically calls this when the dialog is fully closed and removed
   @override
   void dispose() {
     _titleController.dispose();
@@ -34,6 +37,32 @@ class AddBookDialogState extends State<AddBookDialog> {
         .map((item) => item.trim())
         .where((item) => item.isNotEmpty)
         .toList();
+  }
+
+  Future<String?> fetchBookCoverUrl(String title, String author) async {
+    try {
+      final query = author.isNotEmpty ? '$title $author' : title;
+      final encodedQuery = Uri.encodeComponent(query);
+      final url = Uri.parse(
+        'https://openlibrary.org/search.json?q=$encodedQuery&limit=1',
+      );
+
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final docs = data['docs'] as List;
+
+        if (docs.isNotEmpty) {
+          final coverId = docs[0]['cover_i'];
+          if (coverId != null) {
+            return 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching cover: $e');
+    }
+    return null;
   }
 
   Future<void> _pickDate(bool isStart) async {
@@ -83,6 +112,46 @@ class AddBookDialogState extends State<AddBookDialog> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
+  Future<void> _saveBook() async {
+    if (_titleController.text.isEmpty || _authorController.text.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Fetch the cover URL
+      final String? coverUrl = await fetchBookCoverUrl(
+        _titleController.text,
+        _authorController.text,
+      );
+
+      final newBook = Book(
+        title: _titleController.text,
+        authors: _parseCommaSeparatedList(_authorController.text),
+        genre: _parseCommaSeparatedList(_genreController.text),
+        dateStarted: _selectedStartDate,
+        dateFinished: _selectedEndDate,
+        rating: _rating == 0 ? null : _rating,
+        coverUrl: coverUrl,
+      );
+      if (mounted) {
+        Navigator.of(context).pop(newBook);
+      }
+    } catch (e) {
+      debugPrint('Error saving book: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save book. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -118,12 +187,11 @@ class AddBookDialogState extends State<AddBookDialog> {
                 return IconButton(
                   icon: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: Color.fromARGB(255, 180, 138, 39),
+                    color: const Color.fromARGB(255, 180, 138, 39),
                     size: 36,
                   ),
                   onPressed: () {
                     setState(() {
-                      // Toggle off if the same star is tapped, otherwise set to the tapped star's value
                       _rating = (index + 1 == _rating) ? 0 : index + 1;
                     });
                   },
@@ -211,26 +279,22 @@ class AddBookDialogState extends State<AddBookDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Returns null
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
-            if (_titleController.text.isNotEmpty &&
-                _authorController.text.isNotEmpty) {
-              final newBook = Book(
-                title: _titleController.text,
-                authors: _parseCommaSeparatedList(_authorController.text),
-                genre: _parseCommaSeparatedList(_genreController.text),
-                dateStarted: _selectedStartDate,
-                dateFinished: _selectedEndDate,
-                rating: _rating == 0 ? null : _rating,
-              );
-              // Pass the fully built Book object back to the parent!
-              Navigator.of(context).pop(newBook);
-            }
-          },
-          child: const Text('Save'),
+          // Disable button and call _saveBook when loading
+          onPressed: _isLoading ? null : _saveBook,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Save'),
         ),
       ],
     );

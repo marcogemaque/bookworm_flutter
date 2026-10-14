@@ -12,6 +12,7 @@ class Book {
   final String? notes;
   //ratings for
   final int? rating;
+  final String? coverUrl;
 
   Book({
     this.id,
@@ -23,6 +24,7 @@ class Book {
     this.dateStarted,
     this.dateFinished,
     this.rating,
+    this.coverUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -36,6 +38,7 @@ class Book {
       'rating': rating,
       'dateStarted': dateStarted?.millisecondsSinceEpoch,
       'dateFinished': dateFinished?.millisecondsSinceEpoch,
+      'coverUrl': coverUrl,
     };
   }
 
@@ -55,6 +58,7 @@ class Book {
       dateFinished: map['dateFinished'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['dateFinished'] as int)
           : null,
+      coverUrl: map['coverUrl'],
     );
   }
 
@@ -84,6 +88,7 @@ class Book {
     int? rating,
     DateTime? dateStarted,
     DateTime? dateFinished,
+    String? coverUrl,
   }) {
     return Book(
       id: id ?? this.id,
@@ -95,6 +100,7 @@ class Book {
       rating: rating ?? this.rating,
       dateStarted: dateStarted ?? this.dateStarted,
       dateFinished: dateFinished ?? this.dateFinished,
+      coverUrl: coverUrl ?? this.coverUrl,
     );
   }
 }
