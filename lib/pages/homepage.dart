@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: coverUrl != null && coverUrl.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: coverUrl,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 placeholder: (context, url) => const Center(
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
@@ -323,10 +323,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBookCard(Book book) {
     return Card(
-      elevation: 1,
+      color: Color.fromARGB(255, 249, 245, 240),
+      clipBehavior: Clip.antiAlias, // Ensures the cover image respects the card's rounded corners
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
+        side: BorderSide(color: Colors.grey.shade600, width: 1),
       ),
       child: InkWell(
         onTap: () async {
@@ -341,113 +342,198 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. TITLE (TOP)
-              Text(
-                book.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  decoration: book.isRead ? TextDecoration.lineThrough : null,
-                  color: book.isRead ? Colors.grey : Colors.black87,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-
-              // 2. AUTHOR
-              Text(
-                book.authors.join(', '),
-                style: TextStyle(fontSize: 12, color: Colors.black54),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              // 3. GENRE
-              if (book.genre.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  book.genre.join(', '),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-
-              const SizedBox(height: 6),
-              // COVER IMAGE (MIDDLE)
-              _buildCoverPreview(book.coverUrl),
-              // NOTES INDICATOR
-              if (book.notes != null && book.notes!.isNotEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8.0, bottom: 4.0),
-                  child: Icon(
-                    Icons.notes_outlined,
-                    size: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              const Spacer(), // Pushes the bottom row all the way down
-              //RATING AND CHECKBOX (BOTTOM)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  book.rating != null && book.rating! > 0
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${book.rating}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: book.isRead
-                                    ? Colors.grey.shade500
-                                    : Colors.black87,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // COVER IMAGE (occupies most of the card)
+            // 1. COVER IMAGE (occupies most of the card)
+            Expanded(
+              flex: 5,
+              child: Padding(
+                // ADD THIS PADDING: Creates a "zoomed out" framed effect
+                padding: const EdgeInsets.all(12.0),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: book.coverUrl != null && book.coverUrl!.isNotEmpty
+                          ? Transform.scale(
+                              scaleX: 1.35,
+                              child: CachedNetworkImage(
+                                imageUrl: book.coverUrl!,
+                                fit: BoxFit.contain, // Keep contain so it doesn't double-distort
+                                placeholder: (context, url) => Container(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    249,
+                                    245,
+                                    240,
+                                  ),
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    249,
+                                    245,
+                                    240,
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.book,
+                                      size: 48,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              color: const Color.fromARGB(255, 249, 245, 240),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.book,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 2),
-                            const Icon(
-                              Icons.star,
-                              size: 14,
-                              color: Colors.amber,
+                    ),
+                    // Checkbox moved to the top-right of the cover
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Checkbox(
+                        value: book.isRead,
+                        onChanged: (bool? newValue) {
+                          if (newValue != null) {
+                            _toggleReadStatus(book);
+                          }
+                        },
+                        activeColor: Theme.of(context).primaryColor,
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        side: const BorderSide(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // BOTTOM SECTION (Title/Author/Genre left, Rating right)
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Bottom Left: Title, Author, Genre
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            book.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              decoration: book.isRead
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: book.isRead ? Colors.grey : Colors.black87,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            book.authors.join(', '),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.black54,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (book.genre.isNotEmpty) ...[
+                            const SizedBox(height: 1),
+                            Text(
+                              book.genre.join(', '),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade500,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                        )
-                      : Text(
-                          'Unrated',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                            color: book.isRead
-                                ? Colors.grey.shade500
-                                : Colors.black54,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Bottom Right: Rating and Notes Indicator
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        book.rating != null && book.rating! > 0
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${book.rating}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: book.isRead
+                                          ? Colors.grey.shade500
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  const Icon(
+                                    Icons.star,
+                                    size: 10,
+                                    color: Colors.amber,
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Unrated',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontStyle: FontStyle.italic,
+                                  color: book.isRead
+                                      ? Colors.grey.shade500
+                                      : Colors.black54,
+                                ),
+                              ),
+                        if (book.notes != null && book.notes!.isNotEmpty)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4.0),
+                            child: Icon(
+                              Icons.notes_outlined,
+                              size: 8,
+                              color: Colors.grey,
+                            ),
                           ),
-                        ),
-                  Checkbox(
-                    value: book.isRead,
-                    onChanged: (bool? newValue) {
-                      if (newValue != null) {
-                        _toggleReadStatus(book);
-                      }
-                    },
-                    activeColor: Theme.of(context).primaryColor,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
