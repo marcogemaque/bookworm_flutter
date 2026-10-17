@@ -133,9 +133,8 @@ class EditBookDialogState extends State<EditBookDialog> {
 
   Future<void> _saveChanges() async {
     if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title is required')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Title is required')));
       return;
     }
 
