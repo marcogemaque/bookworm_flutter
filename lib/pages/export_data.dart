@@ -41,15 +41,15 @@ class ExportDataScreenState extends State<ExportDataScreen> {
       final file = File('$path/$fileName');
       await file.writeAsString(jsonString);
 
-      if (mounted) {
-        await SharePlus.instance.share(
-          ShareParams(
-            files: [XFile(file.path)],
-            subject: 'Bookworm Data Export',
-            text: 'Here is my Bookworm library export.',
-          ),
-        );
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          subject: 'Bookworm Data Export',
+          text: 'Here is my Bookworm library export.',
+        ),
+      );
 
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Export ready!'),
@@ -59,6 +59,7 @@ class ExportDataScreenState extends State<ExportDataScreen> {
       }
     } catch (e) {
       debugPrint('Error exporting data: $e');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

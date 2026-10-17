@@ -35,7 +35,7 @@ class DatabaseHelper {
       CREATE TABLE books (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
-        authors TEXT NOT NULL,
+        authors TEXT,
         isRead INTEGER NOT NULL DEFAULT 0,
         genre TEXT,
         rating INTEGER,
@@ -46,8 +46,6 @@ class DatabaseHelper {
       )
     ''');
   }
-
-  // --- DATABASE ACTIONS (CRUD) ---
 
   // INSERT: Adds a new book to the database
   Future<int> insertBook(Book book) async {

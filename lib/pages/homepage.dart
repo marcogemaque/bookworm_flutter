@@ -291,6 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Positioned.fill(
               child: book.coverUrl != null && book.coverUrl!.isNotEmpty
                   ? CachedNetworkImage(
+                      key: ValueKey('${book.id}_${book.coverUrl}'),
                       imageUrl: book.coverUrl!,
                       fit: BoxFit.cover, // Fills the entire space
                       placeholder: (context, url) => Container(
