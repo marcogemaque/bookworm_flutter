@@ -80,20 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
         case BookSortOption.titleDesc:
           return (b.title).toLowerCase().compareTo((a.title).toLowerCase());
         case BookSortOption.authorAsc:
-          final authorA = a.authors.isEmpty
-              ? ''
-              : a.authors.join(', ').toLowerCase();
-          final authorB = b.authors.isEmpty
-              ? ''
-              : b.authors.join(', ').toLowerCase();
+          final authorA = a.authors?.join(', ').toLowerCase() ?? '';
+          final authorB = b.authors?.join(', ').toLowerCase() ?? '';
           return authorA.compareTo(authorB);
+
         case BookSortOption.authorDesc:
-          final authorA = a.authors.isEmpty
-              ? ''
-              : a.authors.join(', ').toLowerCase();
-          final authorB = b.authors.isEmpty
-              ? ''
-              : b.authors.join(', ').toLowerCase();
+          final authorA = a.authors?.join(', ').toLowerCase() ?? '';
+          final authorB = b.authors?.join(', ').toLowerCase() ?? '';
           return authorB.compareTo(authorA);
       }
     });
@@ -456,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            book.authors.join(', '),
+                            book.authors?.join(', ') ?? 'Unknown',
                             style: const TextStyle(
                               fontSize: 11,
                               color: Colors.black54,

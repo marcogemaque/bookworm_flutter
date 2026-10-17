@@ -3,7 +3,7 @@ import 'dart:convert';
 class Book {
   final int? id;
   final String title;
-  final List<String> authors;
+  final List<String>? authors;
   final bool isRead;
   final DateTime? dateStarted;
   final DateTime? dateFinished;
@@ -17,7 +17,7 @@ class Book {
   Book({
     this.id,
     required this.title,
-    required this.authors,
+    this.authors,
     this.isRead = false,
     this.genre = const [], // Defaults to empty list, never null
     this.notes, // Defaults to empty list, never null
@@ -31,7 +31,7 @@ class Book {
     return {
       'id': id,
       'title': title,
-      'authors': jsonEncode(authors), // authors is required, so ?? [] isn't strictly needed here, but harmless
+      'authors': jsonEncode(authors),
       'isRead': isRead ? 1 : 0,
       'genre': jsonEncode(genre),
       'notes': notes,
@@ -75,6 +75,20 @@ class Book {
     } catch (e) {
       return []; // Fallback if the JSON is somehow malformed
     }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'authors': authors,
+      'genre': genre,
+      'rating': rating,
+      'dateStarted': dateStarted?.toIso8601String(),
+      'dateFinishd': dateFinished?.toIso8601String(),
+      'notes': notes,
+      'coverUrl': coverUrl,
+    };
   }
 
   // Don't forget your copyWith method!

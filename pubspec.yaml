@@ -20,6 +20,7 @@ dependencies:
   url_launcher: ^6.3.3
   cached_network_image: ^4.0.4
   http: ^1.6.0
+  share_plus: ^13.3.1
 
 dev_dependencies:
   flutter_test:

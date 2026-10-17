@@ -83,7 +83,15 @@ class DatabaseHelper {
     );
   }
 
-  // NEW: Get unique years when books were finished
+  Future<List<Book>> getAllBooks() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query('books');
+    return List.generate(maps.length, (i) {
+      return Book.fromMap(maps[i]);
+    });
+  }
+
   Future<List<int>> getReadYears() async {
     final db = await database;
 
@@ -103,7 +111,6 @@ class DatabaseHelper {
       }
     }
 
-    // Return sorted list of unique years (e.g., [2023, 2024, 2026])
     final sortedYears = years.toList()..sort();
     return sortedYears;
   }

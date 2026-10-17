@@ -28,7 +28,7 @@ class EditBookDialogState extends State<EditBookDialog> {
     // Pre-fill with the existing book's data
     _titleController = TextEditingController(text: widget.book.title);
     _authorController = TextEditingController(
-      text: widget.book.authors.join(', '),
+      text: widget.book.authors?.join(', '),
     );
     _genreController = TextEditingController(
       text: widget.book.genre.join(', '),
@@ -37,8 +37,7 @@ class EditBookDialogState extends State<EditBookDialog> {
     _selectedStartDate = widget.book.dateStarted;
     _selectedEndDate = widget.book.dateFinished;
     _isRead = widget.book.isRead;
-    _rating =
-        widget.book.rating ?? 0; // Added: initialize rating (0 means unrated)
+    _rating = widget.book.rating ?? 0;
   }
 
   @override

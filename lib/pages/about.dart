@@ -40,7 +40,7 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              "While I love reading, I wanted a single place to store all the notes I take per book. Now you can as well.",
+              "We don't collect any data. Just an offline note taking and book tracker.",
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(fontSize: 16, height: 1.5),
             ),

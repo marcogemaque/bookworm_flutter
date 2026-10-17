@@ -12,7 +12,6 @@ class BugReportPage extends StatefulWidget {
 }
 
 class _BugReportPageState extends State<BugReportPage> {
-  // Put this inside your _BugReportPageState class
   Future<void> _sendBugReport() async {
     const String yourEmail = 'imediogre@gmail.com';
 

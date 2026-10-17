@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 // my main page
 import 'package:bookworm/pages/homepage.dart';
 import 'package:bookworm/pages/summary.dart';
+import 'package:bookworm/pages/export_data.dart';
 
 // my other pages
 import 'bug_report_page.dart';
@@ -122,6 +123,15 @@ class AppScaffold extends StatelessWidget {
               onTap: () => _navigateTo(
                 context,
                 const BugReportPage(),
+              ), // Replace with your actual page
+            ),
+            ListTile(
+              leading: const Icon(Icons.download),
+              title: const Text('Export Data'),
+              selected: selectedIndex == 3,
+              onTap: () => _navigateTo(
+                context,
+                const ExportDataScreen(),
               ), // Replace with your actual page
             ),
           ],

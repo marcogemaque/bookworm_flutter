@@ -134,7 +134,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'By ${widget.book.authors.join(', ')}',
+              'By ${widget.book.authors?.join(', ') ?? 'Unknown'}',
               style: GoogleFonts.playfairDisplay(
                 // Replace 'poppins' with your chosen font
                 fontSize: 22,

@@ -312,8 +312,8 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    book.authors.isNotEmpty
-                        ? book.authors.join(', ')
+                    (book.authors?.isNotEmpty ?? false)
+                        ? book.authors!.join(', ')
                         : 'Unknown Author',
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                     maxLines: 1,
