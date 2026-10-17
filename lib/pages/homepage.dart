@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'navigation_bar.dart';
 import '../data_model/book.dart';
@@ -8,7 +9,6 @@ import '/pages/add_book_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 
-// 1. Added Sort Options Enum
 enum BookSortOption { titleAsc, titleDesc, authorAsc, authorDesc }
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Book> _books = [];
   bool _isLoading = true;
 
-  // 2. Added state variables to track sort order for each section
   BookSortOption _readingNowSort = BookSortOption.titleAsc;
   BookSortOption _readSort = BookSortOption.titleAsc;
 
@@ -62,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleReadStatus(Book book) async {
     final bool newIsReadStatus = !book.isRead;
-
     final updatedBook = book.copyWith(isRead: newIsReadStatus);
     await DatabaseHelper.instance.updateBook(updatedBook);
     if (mounted) {
@@ -70,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // 3. Helper method to sort books based on the selected option
   List<Book> _sortBooks(List<Book> books, BookSortOption option) {
     final sorted = List<Book>.from(books);
     sorted.sort((a, b) {
@@ -83,7 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
           final authorA = a.authors?.join(', ').toLowerCase() ?? '';
           final authorB = b.authors?.join(', ').toLowerCase() ?? '';
           return authorA.compareTo(authorB);
-
         case BookSortOption.authorDesc:
           final authorA = a.authors?.join(', ').toLowerCase() ?? '';
           final authorB = b.authors?.join(', ').toLowerCase() ?? '';
@@ -93,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return sorted;
   }
 
-  // 4. NEW: Helper method to group books by year
   Map<String, List<Book>> _groupBooksByYear(List<Book> books) {
     final Map<String, List<Book>> grouped = {};
     for (final book in books) {
@@ -106,51 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
       grouped[yearStr]!.add(book);
     }
     return grouped;
-  }
-
-  Widget _buildCoverPreview(
-    String? coverUrl, {
-    double width = 50,
-    double height = 70,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(
-          6,
-        ), // Slightly tighter radius for small images
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: coverUrl != null && coverUrl.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: coverUrl,
-                fit: BoxFit.contain,
-                placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                errorWidget: (context, url, error) => const Center(
-                  child: Icon(
-                    Icons.book,
-                    size: 24,
-                    color: Colors.grey,
-                  ), // Smaller icon fallback
-                ),
-              )
-            : const Center(
-                child: Icon(Icons.book, size: 24, color: Colors.grey),
-              ),
-      ),
-    );
   }
 
   @override
@@ -176,54 +126,72 @@ class _HomeScreenState extends State<HomeScreen> {
       _readingNowSort,
     );
 
-    // Sort all read books first, so they maintain order when grouped by year
     final read = _sortBooks(
       _books.where((book) => book.isRead).toList(),
       _readSort,
     );
 
-    // Group read books by year
     final readGroupedByYear = _groupBooksByYear(read);
 
-    // Sort years descending, putting 'Unknown' at the very end
     final years = readGroupedByYear.keys.toList();
     years.sort((a, b) {
       if (a == 'Unknown') return 1;
       if (b == 'Unknown') return -1;
-      return int.parse(b)
-          .compareTo(int.parse(a)); // Descending order (e.g., 2026, 2025)
+      return int.parse(b).compareTo(int.parse(a));
     });
 
-    return ListView(
+    // Wrap CustomScrollView in a standard Padding widget
+    return Padding(
       padding: const EdgeInsets.all(12.0),
-      children: [
-        if (readingNow.isNotEmpty) ...[
-          _buildSectionHeader('Reading Now', _readingNowSort, (newSort) {
-            setState(() => _readingNowSort = newSort);
-          }),
-          const SizedBox(height: 8),
-          _buildBookGrid(readingNow),
-          const SizedBox(height: 24),
-        ],
-        if (read.isNotEmpty) ...[
-          _buildSectionHeader(
-            'Read',
-            _readSort,
-            (newSort) => setState(() => _readSort = newSort),
-          ),
-          const SizedBox(height: 16),
-          // Iterate through each year and build a subgroup
-          for (final year in years) ...[
-            _buildYearSubHeader(year),
-            _buildBookGrid(readGroupedByYear[year]!),
-            const SizedBox(height: 24),
+      child: CustomScrollView(
+        scrollCacheExtent: ScrollCacheExtent.pixels(1500.0),
+        slivers: [
+          if (readingNow.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: _buildSectionHeader('Reading Now', _readingNowSort, (
+                newSort,
+              ) {
+                setState(() => _readingNowSort = newSort);
+              }),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            _buildBookSliverGrid(readingNow),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+          if (read.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: _buildSectionHeader(
+                'Read',
+                _readSort,
+                (newSort) => setState(() => _readSort = newSort),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            for (final year in years) ...[
+              SliverToBoxAdapter(child: _buildYearSubHeader(year)),
+              _buildBookSliverGrid(readGroupedByYear[year]!),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
           ],
         ],
-      ],
+      ),
     );
   }
 
-  // Header for Read Books and Is Reading, plus the sorting
+  Widget _buildBookSliverGrid(List<Book> books) {
+    return SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8.0,
+        crossAxisSpacing: 8.0,
+        childAspectRatio: 0.75,
+      ),
+      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+        return _buildBookCard(books[index]);
+      }, childCount: books.length),
+    );
+  }
+
   Widget _buildSectionHeader(
     String title,
     BookSortOption currentSort,
@@ -282,7 +250,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // NEW: Helper for year subheaders
   Widget _buildYearSubHeader(String year) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
@@ -297,27 +264,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBookGrid(List<Book> books) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 8.0,
-        crossAxisSpacing: 8.0,
-        childAspectRatio: 0.75,
-      ),
-      itemCount: books.length,
-      itemBuilder: (BuildContext context, int index) {
-        return _buildBookCard(books[index]);
-      },
-    );
-  }
-
   Widget _buildBookCard(Book book) {
     return Card(
-      color: Color.fromARGB(255, 249, 245, 240),
-      clipBehavior: Clip.antiAlias, // Ensures the cover image respects the card's rounded corners
+      color: const Color.fromARGB(255, 249, 245, 240),
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: Colors.grey.shade600, width: 1),
@@ -338,12 +288,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // COVER IMAGE (occupies most of the card)
-            // 1. COVER IMAGE (occupies most of the card)
             Expanded(
               flex: 5,
               child: Padding(
-                // ADD THIS PADDING: Creates a "zoomed out" framed effect
                 padding: const EdgeInsets.all(12.0),
                 child: Stack(
                   fit: StackFit.expand,
@@ -355,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               scaleX: 1.35,
                               child: CachedNetworkImage(
                                 imageUrl: book.coverUrl!,
-                                fit: BoxFit.contain, // Keep contain so it doesn't double-distort
+                                fit: BoxFit.contain,
                                 placeholder: (context, url) => Container(
                                   color: const Color.fromARGB(
                                     255,
@@ -397,10 +344,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                     ),
-                    // Checkbox moved to the top-right of the cover
                     Positioned(
-                      top: 4,
-                      right: 4,
+                      top: -11,
+                      right: -11,
                       child: Checkbox(
                         value: book.isRead,
                         onChanged: (bool? newValue) {
@@ -413,14 +359,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        side: const BorderSide(color: Colors.white, width: 2),
+                        side: const BorderSide(color: Colors.black, width: 2),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            // BOTTOM SECTION (Title/Author/Genre left, Rating right)
             Expanded(
               flex: 3,
               child: Padding(
@@ -428,7 +373,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Bottom Left: Title, Author, Genre
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,7 +418,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    // Bottom Right: Rating and Notes Indicator
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.end,
