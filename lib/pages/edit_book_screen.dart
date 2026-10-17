@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'dart:convert';
 
 import '/data_model/book.dart';
 import '/database_helper.dart';
@@ -20,12 +23,14 @@ class EditBookDialogState extends State<EditBookDialog> {
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
   late bool _isRead;
-  late int _rating; // Added: to track the 0-5 star rating
+  late int _rating;
+
+  // Add loading state for when we fetch a new cover
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Pre-fill with the existing book's data
     _titleController = TextEditingController(text: widget.book.title);
     _authorController = TextEditingController(
       text: widget.book.authors?.join(', '),
@@ -55,6 +60,30 @@ class EditBookDialogState extends State<EditBookDialog> {
         .map((item) => item.trim())
         .where((item) => item.isNotEmpty)
         .toList();
+  }
+
+  Future<String?> fetchBookCoverUrl(String title, String author) async {
+    try {
+      final query = author.isNotEmpty ? '$title $author' : title;
+      final encodedQuery = Uri.encodeComponent(query);
+      final url = Uri.parse(
+        'https://openlibrary.org/search.json?q=$encodedQuery&limit=1',
+      );
+      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final docs = data['docs'] as List;
+        if (docs.isNotEmpty) {
+          final coverId = docs[0]['cover_i'];
+          if (coverId is int) {
+            return 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching cover: $e');
+    }
+    return null;
   }
 
   Future<void> _pickDate(bool isStart) async {
@@ -111,24 +140,62 @@ class EditBookDialogState extends State<EditBookDialog> {
       return;
     }
 
-    final updatedBook = widget.book.copyWith(
-      title: _titleController.text.trim(),
-      authors: _parseCommaSeparatedList(_authorController.text),
-      genre: _parseCommaSeparatedList(_genreController.text),
-      notes: _notesController.text.trim().isNotEmpty
-          ? _notesController.text.trim()
-          : null,
-      dateStarted: _selectedStartDate,
-      dateFinished: _selectedEndDate,
-      isRead: _isRead,
-      rating: _rating == 0 ? null : _rating, // Added: pass updated rating
+    final newCoverUrl = await fetchBookCoverUrl(
+      _titleController.text.trim(),
+      _authorController.text.trim(),
     );
 
-    await DatabaseHelper.instance.updateBook(updatedBook);
+    setState(() => _isLoading = true);
 
-    if (mounted) {
-      Navigator.of(context)
-          .pop(true); // Tells the detail screen to close and refresh
+    try {
+      final newTitle = _titleController.text.trim();
+      final newAuthors = _parseCommaSeparatedList(_authorController.text);
+      final newAuthorString = newAuthors.join(', ');
+      final oldAuthorString = widget.book.authors?.join(', ') ?? '';
+
+      String? finalCoverUrl = widget.book.coverUrl;
+
+      final newCoverUrl = await fetchBookCoverUrl(
+        _titleController.text.trim(),
+        _authorController.text.trim(),
+      );
+
+      // 1. If Title or Author changed, fetch a new cover URL
+      if (newTitle != widget.book.title || newAuthorString != oldAuthorString) {
+        finalCoverUrl = await fetchBookCoverUrl(newTitle, newAuthorString);
+      }
+
+      // 2. Build the updated book
+      final updatedBook = widget.book.copyWith(
+        title: newTitle,
+        authors: newAuthors,
+        genre: _parseCommaSeparatedList(_genreController.text),
+        notes: _notesController.text.trim().isNotEmpty
+            ? _notesController.text.trim()
+            : null,
+        dateStarted: _selectedStartDate,
+        dateFinished: _selectedEndDate,
+        isRead: _isRead,
+        rating: _rating == 0 ? null : _rating,
+        coverUrl: newCoverUrl ?? widget.book.coverUrl,
+      );
+
+      await DatabaseHelper.instance.updateBook(updatedBook);
+
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      debugPrint('Error saving book: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save changes.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -162,7 +229,6 @@ class EditBookDialogState extends State<EditBookDialog> {
               ),
             ),
             const SizedBox(height: 10),
-            // Date Started
             InkWell(
               onTap: () => _pickDate(true),
               borderRadius: BorderRadius.circular(4),
@@ -201,7 +267,6 @@ class EditBookDialogState extends State<EditBookDialog> {
               ),
             ),
             const SizedBox(height: 10),
-            // Date Finished
             InkWell(
               onTap: () => _pickDate(false),
               borderRadius: BorderRadius.circular(4),
@@ -250,12 +315,11 @@ class EditBookDialogState extends State<EditBookDialog> {
                 return IconButton(
                   icon: Icon(
                     index < _rating ? Icons.star : Icons.star_border,
-                    color: Color.fromARGB(255, 180, 138, 39),
+                    color: const Color.fromARGB(255, 180, 138, 39),
                     size: 36,
                   ),
                   onPressed: () {
                     setState(() {
-                      // Toggle off if the same star is tapped, otherwise set to the tapped star's value
                       _rating = (index + 1 == _rating) ? 0 : index + 1;
                     });
                   },
@@ -281,8 +345,7 @@ class EditBookDialogState extends State<EditBookDialog> {
                 const Spacer(),
                 Switch(
                   value: _isRead,
-                  activeThumbColor:
-                      Colors.green, // Updated from deprecated activeThumbColor
+                  activeColor: Colors.green,
                   onChanged: (value) => setState(() => _isRead = value),
                 ),
               ],
@@ -292,12 +355,21 @@ class EditBookDialogState extends State<EditBookDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(false),
           child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
         ),
         ElevatedButton(
-          onPressed: _saveChanges,
-          child: const Text('Save Changes'),
+          onPressed: _isLoading ? null : _saveChanges,
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Save Changes'),
         ),
       ],
     );

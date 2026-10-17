@@ -91,7 +91,6 @@ class Book {
     };
   }
 
-  // Don't forget your copyWith method!
   Book copyWith({
     int? id,
     String? title,
