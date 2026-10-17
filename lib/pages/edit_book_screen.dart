@@ -140,11 +140,6 @@ class EditBookDialogState extends State<EditBookDialog> {
       return;
     }
 
-    final newCoverUrl = await fetchBookCoverUrl(
-      _titleController.text.trim(),
-      _authorController.text.trim(),
-    );
-
     setState(() => _isLoading = true);
 
     try {
@@ -155,18 +150,13 @@ class EditBookDialogState extends State<EditBookDialog> {
 
       String? finalCoverUrl = widget.book.coverUrl;
 
-      final newCoverUrl = await fetchBookCoverUrl(
-        _titleController.text.trim(),
-        _authorController.text.trim(),
-      );
-
-      // 1. If Title or Author changed, fetch a new cover URL
+      // If Title or Author changed, fetch a new cover URL
       if (newTitle != widget.book.title || newAuthorString != oldAuthorString) {
         finalCoverUrl = await fetchBookCoverUrl(newTitle, newAuthorString);
       }
 
-      // 2. Build the updated book
-      final updatedBook = widget.book.copyWith(
+      final updatedBook = Book(
+        id: widget.book.id,
         title: newTitle,
         authors: newAuthors,
         genre: _parseCommaSeparatedList(_genreController.text),
@@ -177,7 +167,7 @@ class EditBookDialogState extends State<EditBookDialog> {
         dateFinished: _selectedEndDate,
         isRead: _isRead,
         rating: _rating == 0 ? null : _rating,
-        coverUrl: newCoverUrl ?? widget.book.coverUrl,
+        coverUrl: finalCoverUrl,
       );
 
       await DatabaseHelper.instance.updateBook(updatedBook);
