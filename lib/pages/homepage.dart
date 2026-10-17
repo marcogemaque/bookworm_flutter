@@ -285,89 +285,83 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         borderRadius: BorderRadius.circular(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: book.coverUrl != null && book.coverUrl!.isNotEmpty
-                          ? Transform.scale(
-                              scaleX: 1.35,
-                              child: CachedNetworkImage(
-                                imageUrl: book.coverUrl!,
-                                fit: BoxFit.contain,
-                                placeholder: (context, url) => Container(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    249,
-                                    245,
-                                    240,
-                                  ),
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: const Color.fromARGB(
-                                    255,
-                                    249,
-                                    245,
-                                    240,
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.book,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Container(
-                              color: const Color.fromARGB(255, 249, 245, 240),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.book,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                    ),
-                    Positioned(
-                      top: -11,
-                      right: -11,
-                      child: Checkbox(
-                        value: book.isRead,
-                        onChanged: (bool? newValue) {
-                          if (newValue != null) {
-                            _toggleReadStatus(book);
-                          }
-                        },
-                        activeColor: Theme.of(context).primaryColor,
-                        visualDensity: VisualDensity.compact,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+            // 1. Background Image covering the ENTIRE card
+            Positioned.fill(
+              child: book.coverUrl != null && book.coverUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: book.coverUrl!,
+                      fit: BoxFit.cover, // Fills the entire space
+                      placeholder: (context, url) => Container(
+                        color: const Color.fromARGB(255, 249, 245, 240),
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        side: const BorderSide(color: Colors.black, width: 2),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color.fromARGB(255, 249, 245, 240),
+                        child: const Center(
+                          child: Icon(Icons.book, size: 48, color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: const Color.fromARGB(255, 249, 245, 240),
+                      child: const Center(
+                        child: Icon(Icons.book, size: 48, color: Colors.grey),
                       ),
                     ),
-                  ],
+            ),
+
+            // Gradient overlay at the bottom for text readability
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 130,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.85),
+                      Colors.black.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
             ),
-            Expanded(
-              flex: 3,
+
+            // Checkbox at the top right
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Checkbox(
+                value: book.isRead,
+                onChanged: (bool? newValue) {
+                  if (newValue != null) {
+                    _toggleReadStatus(book);
+                  }
+                },
+                activeColor: Theme.of(context).primaryColor,
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                side: const BorderSide(
+                  color: Color.fromARGB(255, 217, 179, 81),
+                  width: 4,
+                ),
+              ),
+            ),
+
+            // 4. Bottom Section (Title, Author, etc.) overlaid on top
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -383,10 +377,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
-                              decoration: book.isRead
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                              color: book.isRead ? Colors.grey : Colors.black87,
+                              // decoration: book.isRead
+                              // ? TextDecoration.lineThrough
+                              // : null,
+                              color: book.isRead
+                                  ? Colors.white70
+                                  : Colors.white,
+                              shadows: const [
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 3.0,
+                                  color: Colors.black54,
+                                ),
+                              ],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -396,7 +399,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             book.authors?.join(', ') ?? 'Unknown',
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Colors.black54,
+                              color: Colors.white70,
+                              shadows: [
+                                Shadow(
+                                  offset: Offset(1.0, 1.0),
+                                  blurRadius: 3.0,
+                                  color: Colors.black54,
+                                ),
+                              ],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -405,10 +415,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 1),
                             Text(
                               book.genre.join(', '),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10,
-                                color: Colors.grey.shade500,
+                                color: Colors.white60,
                                 fontStyle: FontStyle.italic,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(1.0, 1.0),
+                                    blurRadius: 3.0,
+                                    color: Colors.black54,
+                                  ),
+                                ],
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -428,12 +445,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     '${book.rating}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: book.isRead
-                                          ? Colors.grey.shade500
-                                          : Colors.black87,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          offset: Offset(1.0, 1.0),
+                                          blurRadius: 3.0,
+                                          color: Colors.black,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 2),
@@ -444,14 +466,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               )
-                            : Text(
+                            : const Text(
                                 'Unrated',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontStyle: FontStyle.italic,
-                                  color: book.isRead
-                                      ? Colors.grey.shade500
-                                      : Colors.black54,
+                                  color: Colors.white70,
                                 ),
                               ),
                         if (book.notes != null && book.notes!.isNotEmpty)
@@ -459,8 +479,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: EdgeInsets.only(top: 4.0),
                             child: Icon(
                               Icons.notes_outlined,
-                              size: 8,
-                              color: Colors.grey,
+                              size: 12, // Slightly larger for visibility
+                              color: Colors.white70,
                             ),
                           ),
                       ],
