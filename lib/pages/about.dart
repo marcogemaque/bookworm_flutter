@@ -7,6 +7,25 @@ import 'navigation_bar.dart';
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
+  //for our section. A small widget
+  Widget _buildFutureItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("• ", style: GoogleFonts.lato(fontSize: 16, height: 1.5)),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.lato(fontSize: 16, height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -45,6 +64,43 @@ class AboutPage extends StatelessWidget {
               style: GoogleFonts.lato(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 32),
+
+            Card(
+              elevation: 2, // Adds a subtle shadow
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16,
+              ), // Keeps it away from screen edges
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  12,
+                ), // Makes the corners nicely rounded
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0), // Padding inside the card
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment
+                      .start, // Left-aligns the text inside the card
+                  children: [
+                    // The Title
+                    Text(
+                      "Future improvements for v0.0.2b:",
+                      style: GoogleFonts.lato(
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.bold, // Make the title pop a bit more
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // The List
+                    _buildFutureItem("Multiple book covers."),
+                    _buildFutureItem("Multiple file-extension export."),
+                    _buildFutureItem("CSV/JSON import."),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

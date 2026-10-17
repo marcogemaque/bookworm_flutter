@@ -19,13 +19,14 @@ class _SummaryScreenState extends State<SummaryScreen> {
   int intValue = 0;
 
   List<String> funnySentences = [
-    "Lord Read-a-Lot over here!",
+    "Lord Reads-a-Lot over here!",
     "Officer, they're reading too much!",
     "SuperReader legend!",
     "It ain't easy reading this much.",
-    "Seomeong's got super eyes!",
+    "Seomeone's got super eyes!",
     "Man, you're good at reading!",
     "Book-a-licious",
+    "Reader of the month.",
   ];
 
   @override
@@ -326,7 +327,6 @@ class _SummaryScreenState extends State<SummaryScreen> {
             Row(
               mainAxisSize: MainAxisSize.min, // Shrinks to fit content
               children: [
-                // Duration Badge (Only shows if dateStarted is available)
                 if (durationString != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
