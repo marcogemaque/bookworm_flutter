@@ -132,10 +132,9 @@ class EditBookDialogState extends State<EditBookDialog> {
   }
 
   Future<void> _saveChanges() async {
-    if (_titleController.text.trim().isEmpty ||
-        _authorController.text.trim().isEmpty) {
+    if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title and Author are required')),
+        const SnackBar(content: Text('Title is required')),
       );
       return;
     }
@@ -158,7 +157,7 @@ class EditBookDialogState extends State<EditBookDialog> {
       final updatedBook = Book(
         id: widget.book.id,
         title: newTitle,
-        authors: newAuthors,
+        authors: newAuthors.isEmpty ? null : newAuthors,
         genre: _parseCommaSeparatedList(_genreController.text),
         notes: _notesController.text.trim().isNotEmpty
             ? _notesController.text.trim()

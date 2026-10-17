@@ -113,7 +113,7 @@ class AddBookDialogState extends State<AddBookDialog> {
   }
 
   Future<void> _saveBook() async {
-    if (_titleController.text.isEmpty || _authorController.text.isEmpty) return;
+    if (_titleController.text.trim().isEmpty) return;
 
     setState(() => _isLoading = true);
 
@@ -124,9 +124,13 @@ class AddBookDialogState extends State<AddBookDialog> {
         _authorController.text,
       );
 
+      final List<String> authors = _parseCommaSeparatedList(
+        _authorController.text,
+      );
+
       final newBook = Book(
         title: _titleController.text,
-        authors: _parseCommaSeparatedList(_authorController.text),
+        authors: authors.isEmpty ? null : authors,
         genre: _parseCommaSeparatedList(_genreController.text),
         dateStarted: _selectedStartDate,
         dateFinished: _selectedEndDate,

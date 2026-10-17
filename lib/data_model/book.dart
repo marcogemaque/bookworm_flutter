@@ -46,7 +46,7 @@ class Book {
     return Book(
       id: map['id'],
       title: map['title'],
-      authors: _safeDecode(map['authors']),
+      authors: _safeDecodeNullable(map['authors']),
       isRead: map['isRead'] == 1,
       genre: _safeDecode(map['genre']),
       notes: map['notes'],
@@ -74,6 +74,22 @@ class Book {
       return decoded is List ? List<String>.from(decoded) : [];
     } catch (e) {
       return []; // Fallback if the JSON is somehow malformed
+    }
+  }
+
+  // Same as _safeDecode, but returns null for missing/empty authors so that
+  // "no author" is represented as null rather than an empty list.
+  static List<String>? _safeDecodeNullable(dynamic value) {
+    if (value == null) return null; // Handles SQL NULL
+    if (value is String && value == 'null') {
+      return null; // Handles the literal string "null"
+    }
+
+    try {
+      final decoded = jsonDecode(value);
+      return decoded is List ? List<String>.from(decoded) : null;
+    } catch (e) {
+      return null; // Fallback if the JSON is somehow malformed
     }
   }
 
