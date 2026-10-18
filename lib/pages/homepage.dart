@@ -293,11 +293,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const PopupMenuItem(
                 value: BookSortOption.dateAddedAsc,
-                child: Text('Added (New-Old)'),
+                child: Text('Added (Old-New)'),
               ),
               const PopupMenuItem(
                 value: BookSortOption.dateAddedDesc,
-                child: Text('Added (Old-New)'),
+                child: Text('Added (New-Old)'),
               ),
             ],
           ),
