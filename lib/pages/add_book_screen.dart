@@ -173,6 +173,7 @@ class AddBookDialogState extends State<AddBookDialog> {
         dateFinished: _selectedEndDate,
         rating: _rating == 0 ? null : _rating,
         coverUrl: coverUrl,
+        addedOnDate: DateTime.now(),
       );
       if (mounted) {
         Navigator.of(context).pop(newBook);

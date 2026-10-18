@@ -13,6 +13,8 @@ class Book {
   //ratings for
   final int? rating;
   final String? coverUrl;
+  //audit column
+  final DateTime addedOnDate; //we'll use this to also sort the books
 
   Book({
     this.id,
@@ -25,6 +27,7 @@ class Book {
     this.dateFinished,
     this.rating,
     this.coverUrl,
+    required this.addedOnDate,
   });
 
   Map<String, dynamic> toMap() {
@@ -39,6 +42,7 @@ class Book {
       'dateStarted': dateStarted?.millisecondsSinceEpoch,
       'dateFinished': dateFinished?.millisecondsSinceEpoch,
       'coverUrl': coverUrl,
+      'addedOnDate': addedOnDate.millisecondsSinceEpoch,
     };
   }
 
@@ -59,6 +63,10 @@ class Book {
           ? DateTime.fromMillisecondsSinceEpoch(map['dateFinished'] as int)
           : null,
       coverUrl: map['coverUrl'],
+      //this one we always will make it into milliseconds since epoch
+      addedOnDate: DateTime.fromMillisecondsSinceEpoch(
+        map['addedOnDate'] as int,
+      ),
     );
   }
 
@@ -104,6 +112,7 @@ class Book {
       'dateFinishd': dateFinished?.toIso8601String(),
       'notes': notes,
       'coverUrl': coverUrl,
+      'addedOnDate': addedOnDate.toIso8601String(),
     };
   }
 
@@ -118,6 +127,7 @@ class Book {
     DateTime? dateStarted,
     DateTime? dateFinished,
     String? coverUrl,
+    DateTime? addedOnDate,
   }) {
     return Book(
       id: id ?? this.id,
@@ -130,6 +140,7 @@ class Book {
       dateStarted: dateStarted ?? this.dateStarted,
       dateFinished: dateFinished ?? this.dateFinished,
       coverUrl: coverUrl ?? this.coverUrl,
+      addedOnDate: this.addedOnDate,
     );
   }
 }

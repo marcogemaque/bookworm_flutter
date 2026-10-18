@@ -42,7 +42,8 @@ class DatabaseHelper {
         notes TEXT,
         dateStarted INTEGER,
         dateFinished INTEGER,
-        coverUrl TEXT
+        coverUrl TEXT,
+        addedOnDate INTEGER
       )
     ''');
   }

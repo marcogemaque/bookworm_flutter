@@ -9,7 +9,18 @@ import '/pages/add_book_screen.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 
-enum BookSortOption { titleAsc, titleDesc, authorAsc, authorDesc }
+enum BookSortOption {
+  titleAsc,
+  titleDesc,
+  authorAsc,
+  authorDesc,
+  dateStartedAsc,
+  dateStartedDesc,
+  dateFinishedAsc,
+  dateFinishedDesc,
+  dateAddedAsc,
+  dateAddedDesc,
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Book> _books = [];
   bool _isLoading = true;
 
-  BookSortOption _readingNowSort = BookSortOption.titleAsc;
-  BookSortOption _readSort = BookSortOption.titleAsc;
+  BookSortOption _readingNowSort = BookSortOption.dateAddedDesc;
+  BookSortOption _readSort = BookSortOption.dateAddedDesc;
 
   @override
   void initState() {
@@ -73,9 +84,9 @@ class _HomeScreenState extends State<HomeScreen> {
     sorted.sort((a, b) {
       switch (option) {
         case BookSortOption.titleAsc:
-          return (a.title).toLowerCase().compareTo((b.title).toLowerCase());
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
         case BookSortOption.titleDesc:
-          return (b.title).toLowerCase().compareTo((a.title).toLowerCase());
+          return b.title.toLowerCase().compareTo(a.title.toLowerCase());
         case BookSortOption.authorAsc:
           final authorA = a.authors?.join(', ').toLowerCase() ?? '';
           final authorB = b.authors?.join(', ').toLowerCase() ?? '';
@@ -84,9 +95,30 @@ class _HomeScreenState extends State<HomeScreen> {
           final authorA = a.authors?.join(', ').toLowerCase() ?? '';
           final authorB = b.authors?.join(', ').toLowerCase() ?? '';
           return authorB.compareTo(authorA);
+        // ------- ALL OUR DATES SORTING -----------
+        case BookSortOption.dateStartedAsc:
+          return _compareNullableDates(a.dateStarted, b.dateStarted, true);
+        case BookSortOption.dateStartedDesc:
+          return _compareNullableDates(a.dateStarted, b.dateStarted, false);
+        case BookSortOption.dateFinishedAsc:
+          return _compareNullableDates(a.dateFinished, b.dateFinished, true);
+        case BookSortOption.dateFinishedDesc:
+          return _compareNullableDates(a.dateFinished, b.dateFinished, false);
+        case BookSortOption.dateAddedAsc:
+          return a.addedOnDate.compareTo(b.addedOnDate);
+        case BookSortOption.dateAddedDesc:
+          return b.addedOnDate.compareTo(a.addedOnDate);
       }
     });
     return sorted;
+  }
+
+  // helper function to handle null dates and shit
+  int _compareNullableDates(DateTime? a, DateTime? b, bool ascending) {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1; // 'a' goes after 'b' (pushes nulls to the bottom)
+    if (b == null) return -1; // 'a' goes before 'b'
+    return ascending ? a.compareTo(b) : b.compareTo(a);
   }
 
   Map<String, List<Book>> _groupBooksByYear(List<Book> books) {
@@ -242,6 +274,30 @@ class _HomeScreenState extends State<HomeScreen> {
               const PopupMenuItem(
                 value: BookSortOption.authorDesc,
                 child: Text('Author (Z-A)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateStartedAsc,
+                child: Text('Started (New-Old)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateStartedDesc,
+                child: Text('Started (Old-New)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateFinishedAsc,
+                child: Text('Finished (New-Old)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateFinishedDesc,
+                child: Text('Finished (Old-New)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateAddedAsc,
+                child: Text('Added (New-Old)'),
+              ),
+              const PopupMenuItem(
+                value: BookSortOption.dateAddedDesc,
+                child: Text('Added (Old-New)'),
               ),
             ],
           ),

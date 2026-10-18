@@ -62,14 +62,37 @@ class EditBookDialogState extends State<EditBookDialog> {
         .toList();
   }
 
-  Future<String?> fetchBookCoverUrl(String title, String author) async {
-    try {
-      final query = author.isNotEmpty ? '$title $author' : title;
-      final url = Uri.parse(
-        'https://openlibrary.org/search.json?q=${Uri.encodeComponent(query)}&limit=2',
-      );
+  Set<String> _words(String text) {
+    const stop = {'a', 'an', 'the', 'of', 'and', 'in', 'on', 'to', 'for'};
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty && !stop.contains(w))
+        .toSet();
+  }
 
-      final response = await http.get(url);
+  double _score(String input, String candidate) {
+    final a = _words(input);
+    final b = _words(candidate);
+    if (a.isEmpty || b.isEmpty) return 0;
+
+    // Perfect match if one set contains all words from the other
+    if (a.containsAll(b) || b.containsAll(a)) return 1.0;
+
+    // Otherwise, what fraction of the user's input is in the candidate?
+    return a.intersection(b).length / a.length;
+  }
+
+  Future<String?> fetchBookCoverUrl(String title, String? author) async {
+    try {
+      final uri = Uri.https('openlibrary.org', '/search.json', {
+        'title': title,
+        if (author != null && author.isNotEmpty) 'author': author,
+        'limit': '5',
+      });
+
+      final response = await http.get(uri);
       if (response.statusCode != 200) return null;
 
       final data = jsonDecode(response.body);
@@ -82,7 +105,8 @@ class EditBookDialogState extends State<EditBookDialog> {
         final coverId = doc['cover_i'];
         if (coverId == null) continue;
 
-        double score = _calculateMatchScore(title, author, doc);
+        final apiTitle = doc['title'] as String? ?? '';
+        final score = _score(title, apiTitle);
 
         if (score > highestScore) {
           highestScore = score;
@@ -90,7 +114,7 @@ class EditBookDialogState extends State<EditBookDialog> {
         }
       }
 
-      if (highestScore >= 0.70) {
+      if (highestScore >= 0.8) {
         return bestCoverUrl;
       }
     } catch (e) {
@@ -98,47 +122,6 @@ class EditBookDialogState extends State<EditBookDialog> {
     }
 
     return null;
-  }
-
-  // Helper function to calculate the match percentage
-  double _calculateMatchScore(
-    String inputTitle,
-    String inputAuthor,
-    Map<String, dynamic> doc,
-  ) {
-    final returnedTitle = (doc['title'] as String? ?? '').toLowerCase();
-    final returnedAuthors = (doc['author_name'] as List? ?? [])
-        .map((a) => a.toString().toLowerCase())
-        .join(' ');
-
-    final cleanInputTitle = inputTitle.toLowerCase().trim();
-    final cleanInputAuthor = inputAuthor.toLowerCase().trim();
-
-    // Basic scoring logic (You can make this more complex)
-    double titleScore = 0.0;
-    double authorScore = 0.0;
-
-    // Title scoring
-    if (returnedTitle == cleanInputTitle) {
-      titleScore = 1.0; // Exact match
-    } else if (returnedTitle.contains(cleanInputTitle) ||
-        cleanInputTitle.contains(returnedTitle)) {
-      titleScore = 0.8; // Partial match
-    }
-
-    // Author scoring (if provided)
-    if (cleanInputAuthor.isNotEmpty) {
-      if (returnedAuthors.contains(cleanInputAuthor)) {
-        authorScore = 1.0;
-      } else {
-        authorScore = 0.0;
-      }
-    } else {
-      authorScore =
-          1.0; // If user didn't type an author, don't penalize the score
-    }
-
-    return (titleScore * 0.9) + (authorScore * 0.1);
   }
 
   Future<void> _pickDate(bool isStart) async {
@@ -221,6 +204,7 @@ class EditBookDialogState extends State<EditBookDialog> {
         isRead: _isRead,
         rating: _rating == 0 ? null : _rating,
         coverUrl: finalCoverUrl,
+        addedOnDate: widget.book.addedOnDate,
       );
 
       await DatabaseHelper.instance.updateBook(updatedBook);
