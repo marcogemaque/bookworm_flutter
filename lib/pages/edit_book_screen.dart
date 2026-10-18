@@ -65,25 +65,80 @@ class EditBookDialogState extends State<EditBookDialog> {
   Future<String?> fetchBookCoverUrl(String title, String author) async {
     try {
       final query = author.isNotEmpty ? '$title $author' : title;
-      final encodedQuery = Uri.encodeComponent(query);
       final url = Uri.parse(
-        'https://openlibrary.org/search.json?q=$encodedQuery&limit=1',
+        'https://openlibrary.org/search.json?q=${Uri.encodeComponent(query)}&limit=2',
       );
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final docs = data['docs'] as List;
-        if (docs.isNotEmpty) {
-          final coverId = docs[0]['cover_i'];
-          if (coverId is int) {
-            return 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
-          }
+
+      final response = await http.get(url);
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+      final docs = data['docs'] as List;
+
+      String? bestCoverUrl;
+      double highestScore = 0.0;
+
+      for (var doc in docs) {
+        final coverId = doc['cover_i'];
+        if (coverId == null) continue;
+
+        double score = _calculateMatchScore(title, author, doc);
+
+        if (score > highestScore) {
+          highestScore = score;
+          bestCoverUrl = 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
         }
+      }
+
+      if (highestScore >= 0.70) {
+        return bestCoverUrl;
       }
     } catch (e) {
       debugPrint('Error fetching cover: $e');
     }
+
     return null;
+  }
+
+  // Helper function to calculate the match percentage
+  double _calculateMatchScore(
+    String inputTitle,
+    String inputAuthor,
+    Map<String, dynamic> doc,
+  ) {
+    final returnedTitle = (doc['title'] as String? ?? '').toLowerCase();
+    final returnedAuthors = (doc['author_name'] as List? ?? [])
+        .map((a) => a.toString().toLowerCase())
+        .join(' ');
+
+    final cleanInputTitle = inputTitle.toLowerCase().trim();
+    final cleanInputAuthor = inputAuthor.toLowerCase().trim();
+
+    // Basic scoring logic (You can make this more complex)
+    double titleScore = 0.0;
+    double authorScore = 0.0;
+
+    // Title scoring
+    if (returnedTitle == cleanInputTitle) {
+      titleScore = 1.0; // Exact match
+    } else if (returnedTitle.contains(cleanInputTitle) ||
+        cleanInputTitle.contains(returnedTitle)) {
+      titleScore = 0.8; // Partial match
+    }
+
+    // Author scoring (if provided)
+    if (cleanInputAuthor.isNotEmpty) {
+      if (returnedAuthors.contains(cleanInputAuthor)) {
+        authorScore = 1.0;
+      } else {
+        authorScore = 0.0;
+      }
+    } else {
+      authorScore =
+          1.0; // If user didn't type an author, don't penalize the score
+    }
+
+    return (titleScore * 0.9) + (authorScore * 0.1);
   }
 
   Future<void> _pickDate(bool isStart) async {

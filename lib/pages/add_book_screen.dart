@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// import 'package:string_similarity/string_similarity.dart';
 
 import 'dart:convert';
 
@@ -39,29 +40,65 @@ class AddBookDialogState extends State<AddBookDialog> {
         .toList();
   }
 
-  Future<String?> fetchBookCoverUrl(String title, String author) async {
+  Set<String> _words(String text) {
+    const stop = {'a', 'an', 'the', 'of', 'and', 'in', 'on', 'to', 'for'};
+    return text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty && !stop.contains(w))
+        .toSet();
+  }
+
+  double _score(String input, String candidate) {
+    final a = _words(input);
+    final b = _words(candidate);
+    if (a.isEmpty || b.isEmpty) return 0;
+
+    // Perfect match if one set contains all words from the other
+    if (a.containsAll(b) || b.containsAll(a)) return 1.0;
+
+    // Otherwise, what fraction of the user's input is in the candidate?
+    return a.intersection(b).length / a.length;
+  }
+
+  Future<String?> fetchBookCoverUrl(String title, String? author) async {
     try {
-      final query = author.isNotEmpty ? '$title $author' : title;
-      final encodedQuery = Uri.encodeComponent(query);
-      final url = Uri.parse(
-        'https://openlibrary.org/search.json?q=$encodedQuery&limit=1',
-      );
+      final uri = Uri.https('openlibrary.org', '/search.json', {
+        'title': title,
+        if (author != null && author.isNotEmpty) 'author': author,
+        'limit': '5',
+      });
 
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final docs = data['docs'] as List;
+      final response = await http.get(uri);
+      if (response.statusCode != 200) return null;
 
-        if (docs.isNotEmpty) {
-          final coverId = docs[0]['cover_i'];
-          if (coverId != null) {
-            return 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
-          }
+      final data = jsonDecode(response.body);
+      final docs = data['docs'] as List;
+
+      String? bestCoverUrl;
+      double highestScore = 0.0;
+
+      for (var doc in docs) {
+        final coverId = doc['cover_i'];
+        if (coverId == null) continue;
+
+        final apiTitle = doc['title'] as String? ?? '';
+        final score = _score(title, apiTitle);
+
+        if (score > highestScore) {
+          highestScore = score;
+          bestCoverUrl = 'https://covers.openlibrary.org/b/id/$coverId-M.jpg';
         }
+      }
+
+      if (highestScore >= 0.8) {
+        return bestCoverUrl;
       }
     } catch (e) {
       debugPrint('Error fetching cover: $e');
     }
+
     return null;
   }
 

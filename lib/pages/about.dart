@@ -54,7 +54,7 @@ class AboutPage extends StatelessWidget {
               ),
             ),
             Text(
-              'Version 0.0.1b',
+              'Version 1.0.0+1',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
@@ -83,7 +83,7 @@ class AboutPage extends StatelessWidget {
                   children: [
                     // The Title
                     Text(
-                      "Future improvements for v0.0.2b:",
+                      "Future improvements for next version:",
                       style: GoogleFonts.lato(
                         fontSize: 18,
                         fontWeight:
