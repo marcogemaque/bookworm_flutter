@@ -372,7 +372,7 @@ class EditBookDialogState extends State<EditBookDialog> {
                 const Spacer(),
                 Switch(
                   value: _isRead,
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                   onChanged: (value) => setState(() => _isRead = value),
                 ),
               ],
