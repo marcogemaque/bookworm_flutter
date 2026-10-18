@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:bookworm/pages/homepage.dart';
 
-void main() {
+import 'database_helper.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final dbHelper = DatabaseHelper.instance;
+  await dbHelper.database;
+  await dbHelper.seedDatabaseIfEmpty();
   runApp(const MyApp());
 }
 
