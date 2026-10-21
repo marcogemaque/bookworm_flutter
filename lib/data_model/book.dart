@@ -7,27 +7,26 @@ class Book {
   final bool isRead;
   final DateTime? dateStarted;
   final DateTime? dateFinished;
-  // Make these non-nullable and default to empty lists!
   final List<String> genre;
   final String? notes;
-  //ratings for
   final int? rating;
   final String? coverUrl;
-  //audit column
-  final DateTime addedOnDate; //we'll use this to also sort the books
+  final DateTime addedOnDate;
+  final bool? isAudiobook; // Optional boolean
 
   Book({
     this.id,
     required this.title,
     this.authors,
     this.isRead = false,
-    this.genre = const [], // Defaults to empty list, never null
-    this.notes, // Defaults to empty list, never null
+    this.genre = const [],
+    this.notes,
     this.dateStarted,
     this.dateFinished,
     this.rating,
     this.coverUrl,
     required this.addedOnDate,
+    this.isAudiobook,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +42,8 @@ class Book {
       'dateFinished': dateFinished?.millisecondsSinceEpoch,
       'coverUrl': coverUrl,
       'addedOnDate': addedOnDate.millisecondsSinceEpoch,
+      // Safely store null as null, otherwise 1 or 0
+      'isAudiobook': isAudiobook == null ? null : (isAudiobook! ? 1 : 0),
     };
   }
 
@@ -55,7 +56,6 @@ class Book {
       genre: _safeDecode(map['genre']),
       notes: map['notes'],
       rating: map['rating'],
-      //Convert INTEGER back to DateTime (or null if it doesn't exist)
       dateStarted: map['dateStarted'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['dateStarted'] as int)
           : null,
@@ -63,41 +63,35 @@ class Book {
           ? DateTime.fromMillisecondsSinceEpoch(map['dateFinished'] as int)
           : null,
       coverUrl: map['coverUrl'],
-      //this one we always will make it into milliseconds since epoch
       addedOnDate: DateTime.fromMillisecondsSinceEpoch(
         map['addedOnDate'] as int,
       ),
+      // Correctly parse null, 1, or 0
+      isAudiobook: map['isAudiobook'] == null ? null : map['isAudiobook'] == 1,
     );
   }
 
-  // This helper safely handles SQL NULL, the string "null", and valid JSON
   static List<String> _safeDecode(dynamic value) {
-    if (value == null) return []; // Handles SQL NULL
-    if (value is String && value == 'null') {
-      return []; // Handles the literal string "null"
-    }
+    if (value == null) return [];
+    if (value is String && value == 'null') return [];
 
     try {
       final decoded = jsonDecode(value);
       return decoded is List ? List<String>.from(decoded) : [];
     } catch (e) {
-      return []; // Fallback if the JSON is somehow malformed
+      return [];
     }
   }
 
-  // Same as _safeDecode, but returns null for missing/empty authors so that
-  // "no author" is represented as null rather than an empty list.
   static List<String>? _safeDecodeNullable(dynamic value) {
-    if (value == null) return null; // Handles SQL NULL
-    if (value is String && value == 'null') {
-      return null; // Handles the literal string "null"
-    }
+    if (value == null) return null;
+    if (value is String && value == 'null') return null;
 
     try {
       final decoded = jsonDecode(value);
       return decoded is List ? List<String>.from(decoded) : null;
     } catch (e) {
-      return null; // Fallback if the JSON is somehow malformed
+      return null;
     }
   }
 
@@ -109,10 +103,11 @@ class Book {
       'genre': genre,
       'rating': rating,
       'dateStarted': dateStarted?.toIso8601String(),
-      'dateFinishd': dateFinished?.toIso8601String(),
+      'dateFinished': dateFinished?.toIso8601String(), // Fixed typo here
       'notes': notes,
       'coverUrl': coverUrl,
       'addedOnDate': addedOnDate.toIso8601String(),
+      'isAudiobook': isAudiobook,
     };
   }
 
@@ -128,6 +123,7 @@ class Book {
     DateTime? dateFinished,
     String? coverUrl,
     DateTime? addedOnDate,
+    bool? isAudiobook, // Fixed: was int?
   }) {
     return Book(
       id: id ?? this.id,
@@ -140,7 +136,8 @@ class Book {
       dateStarted: dateStarted ?? this.dateStarted,
       dateFinished: dateFinished ?? this.dateFinished,
       coverUrl: coverUrl ?? this.coverUrl,
-      addedOnDate: this.addedOnDate,
+      addedOnDate: addedOnDate ?? this.addedOnDate,
+      isAudiobook: isAudiobook ?? this.isAudiobook,
     );
   }
 }

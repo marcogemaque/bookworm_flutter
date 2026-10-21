@@ -238,11 +238,13 @@ class EditBookDialogState extends State<EditBookDialog> {
           children: [
             TextField(
               controller: _titleController,
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(labelText: 'Title'),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _authorController,
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
                 labelText: 'Authors (comma-separated)',
                 hintText: 'e.g. Neil Gaiman, Terry Pratchett',

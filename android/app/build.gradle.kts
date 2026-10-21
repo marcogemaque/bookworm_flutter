@@ -48,6 +48,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // This adds ".debug" to your package name for debug builds
+            // e.g., com.example.myapp becomes com.example.myapp.debug
+            applicationIdSuffix ".debug"
+        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.

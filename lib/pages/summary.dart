@@ -77,11 +77,30 @@ class _SummaryScreenState extends State<SummaryScreen> {
   // Helper to get filtered books based on selected year
   List<Book> _getFilteredBooks() {
     final readBooks = _getReadBooks();
-    if (_selectedYear == null) return readBooks;
 
-    return readBooks
-        .where((book) => book.dateFinished?.year == _selectedYear)
-        .toList();
+    final filtered = _selectedYear == null
+        ? readBooks
+        : readBooks
+              .where((book) => book.dateFinished?.year == _selectedYear)
+              .toList();
+
+    filtered.sort((a, b) {
+      final dateA = a.dateFinished;
+      final dateB = b.dateFinished;
+
+      if (dateA == null && dateB == null) return 0;
+
+      // If only 'a' is null, push it to the end of the list
+      if (dateA == null) return 1;
+
+      // If only 'b' is null, push it to the end of the list
+      if (dateB == null) return -1;
+
+      // Both have valid dates, newest first
+      return dateB.compareTo(dateA);
+    });
+
+    return filtered;
   }
 
   // Helper to get unique years for the dropdown (derived from loaded books)

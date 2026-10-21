@@ -204,19 +204,24 @@ class AddBookDialogState extends State<AddBookDialog> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(labelText: 'Title: ie. Dune'),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _authorController,
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Author 1, Author 2',
+                labelText: 'Authors (comma-separated)',
+                hintText: 'e.g. Neil Gaiman, Terry Pratchett',
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _genreController,
-              decoration: const InputDecoration(labelText: 'Sci-Fi, Horror'),
+              decoration: const InputDecoration(
+                labelText: 'Genres (comma-separated)',
+              ),
             ),
             const SizedBox(height: 16),
             const Text(

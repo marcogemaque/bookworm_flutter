@@ -277,27 +277,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const PopupMenuItem(
                 value: BookSortOption.dateStartedAsc,
-                child: Text('Started (New-Old)'),
-              ),
-              const PopupMenuItem(
-                value: BookSortOption.dateStartedDesc,
                 child: Text('Started (Old-New)'),
               ),
               const PopupMenuItem(
-                value: BookSortOption.dateFinishedAsc,
-                child: Text('Finished (New-Old)'),
+                value: BookSortOption.dateStartedDesc,
+                child: Text('Started (New-Old)'),
               ),
               const PopupMenuItem(
-                value: BookSortOption.dateFinishedDesc,
+                value: BookSortOption.dateFinishedAsc,
                 child: Text('Finished (Old-New)'),
               ),
               const PopupMenuItem(
+                value: BookSortOption.dateFinishedDesc,
+                child: Text('Finished (New-Old)'),
+              ),
+              const PopupMenuItem(
                 value: BookSortOption.dateAddedAsc,
-                child: Text('Added (Old-New)'),
+                child: Text('Added (New-Old)'),
               ),
               const PopupMenuItem(
                 value: BookSortOption.dateAddedDesc,
-                child: Text('Added (New-Old)'),
+                child: Text('Added (Old-New)'),
               ),
             ],
           ),
