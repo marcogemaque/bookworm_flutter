@@ -24,6 +24,7 @@ class EditBookDialogState extends State<EditBookDialog> {
   DateTime? _selectedEndDate;
   late bool _isRead;
   late int _rating;
+  late bool _isAudiobook; //new variable we just added
 
   // Add loading state for when we fetch a new cover
   bool _isLoading = false;
@@ -43,6 +44,7 @@ class EditBookDialogState extends State<EditBookDialog> {
     _selectedEndDate = widget.book.dateFinished;
     _isRead = widget.book.isRead;
     _rating = widget.book.rating ?? 0;
+    _isAudiobook = widget.book.isAudiobook ?? false;
   }
 
   @override
@@ -205,6 +207,7 @@ class EditBookDialogState extends State<EditBookDialog> {
         rating: _rating == 0 ? null : _rating,
         coverUrl: finalCoverUrl,
         addedOnDate: widget.book.addedOnDate,
+        isAudiobook: _isAudiobook,
       );
 
       await DatabaseHelper.instance.updateBook(updatedBook);
@@ -246,7 +249,7 @@ class EditBookDialogState extends State<EditBookDialog> {
               controller: _authorController,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Authors (comma-separated)',
+                labelText: 'Authors: ie. Terry Pratchett, Neil Gaiman',
                 hintText: 'e.g. Neil Gaiman, Terry Pratchett',
               ),
             ),
@@ -254,7 +257,8 @@ class EditBookDialogState extends State<EditBookDialog> {
             TextField(
               controller: _genreController,
               decoration: const InputDecoration(
-                labelText: 'Genres (comma-separated)',
+                labelText: 'Genres: ie. Sci-Fi, Horror',
+                hintText: 'e.g. Sci-Fi, Horror, Comedy',
               ),
             ),
             const SizedBox(height: 10),
@@ -355,12 +359,6 @@ class EditBookDialogState extends State<EditBookDialog> {
                 );
               }),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(labelText: 'Notes'),
-              maxLines: 3,
-            ),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -376,6 +374,24 @@ class EditBookDialogState extends State<EditBookDialog> {
                   value: _isRead,
                   activeThumbColor: Colors.green,
                   onChanged: (value) => setState(() => _isRead = value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text(
+                  'Is Audiobook',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: _isAudiobook,
+                  activeThumbColor: Colors.green,
+                  onChanged: (value) => setState(() => _isAudiobook = value),
                 ),
               ],
             ),

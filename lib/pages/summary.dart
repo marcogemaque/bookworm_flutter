@@ -52,6 +52,50 @@ class _SummaryScreenState extends State<SummaryScreen> {
     return _books.where((book) => book.isRead).toList();
   }
 
+  // Helper to count audiobooks in the filtered list
+  int _getAudiobookCount(List<Book> books) {
+    return books.where((book) => book.isAudiobook == true).length;
+  }
+
+  // Helper to count normal books in the filtered list
+  int _getNormalBookCount(List<Book> books) {
+    return books.where((book) => book.isAudiobook != true).length;
+  }
+
+  // Helper to find the most frequent genre in the filtered list
+  String _getMostReadGenre(List<Book> books) {
+    if (books.isEmpty) return "None";
+
+    final Map<String, int> genreCounts = {};
+
+    for (final book in books) {
+      if (book.genre != null) {
+        for (final g in book.genre) {
+          final normalized = g.trim().toLowerCase();
+          if (normalized.isNotEmpty) {
+            genreCounts[normalized] = (genreCounts[normalized] ?? 0) + 1;
+          }
+        }
+      }
+    }
+
+    if (genreCounts.isEmpty) return "None";
+
+    // Find the genre with the highest count
+    String topGenre = genreCounts.keys.first;
+    int maxCount = 0;
+
+    genreCounts.forEach((genre, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        topGenre = genre;
+      }
+    });
+
+    // Capitalize the first letter for a cleaner look
+    return topGenre[0].toUpperCase() + topGenre.substring(1);
+  }
+
   // Helper to get only read books THIS calendar year
   List<Book> _getReadBooksThisYear() {
     final currentYear = DateTime.now().year;
@@ -184,6 +228,47 @@ class _SummaryScreenState extends State<SummaryScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                // Card 1: Audiobooks
+                Expanded(
+                  child: _buildSummaryCard(
+                    icon: Icons.headset,
+                    iconColor: Colors.purple.shade700,
+                    bgColor: Colors.purple.shade50,
+                    value: _getAudiobookCount(filteredBooks).toString(),
+                    label: 'Audiobooks',
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Card 2: Normal Books
+                Expanded(
+                  child: _buildSummaryCard(
+                    icon: Icons.book,
+                    iconColor: Colors.orange.shade700,
+                    bgColor: Colors.orange.shade50,
+                    value: _getNormalBookCount(filteredBooks).toString(),
+                    label: 'Books',
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Card 3: Most Read Genre
+                Expanded(
+                  child: _buildSummaryCard(
+                    icon: Icons.local_offer,
+                    iconColor: Colors.teal.shade700,
+                    bgColor: Colors.teal.shade50,
+                    value: _getMostReadGenre(filteredBooks),
+                    label: 'Top Genre',
+                  ),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 32),
 
             // 3. Reading History Header & Year Filter
@@ -281,6 +366,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
   Widget _buildBookListItem(Book book, BuildContext context) {
     // Safely extract the year if dateFinished exists
     final yearString = book.dateFinished?.year.toString() ?? '';
+    final isAudiobook = book.isAudiobook;
 
     // Calculate duration if both dates exist
     String? durationString;
@@ -311,7 +397,17 @@ class _SummaryScreenState extends State<SummaryScreen> {
                 color: Colors.orange.shade50,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.book, color: Colors.orange, size: 24),
+              child: isAudiobook ?? false
+                  ? const Icon(
+                      Icons.headset,
+                      color: Colors.orange,
+                      size: 24,
+                    ) // Condition A (True)
+                  : const Icon(
+                      Icons.book,
+                      color: Colors.orange,
+                      size: 24,
+                    ), // Condition B (False)
             ),
             const SizedBox(width: 16),
 
@@ -404,6 +500,62 @@ class _SummaryScreenState extends State<SummaryScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

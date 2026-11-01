@@ -54,7 +54,7 @@ class AboutPage extends StatelessWidget {
               ),
             ),
             Text(
-              'Version 1.0.0+1',
+              'Version 1.0.0+2',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
@@ -83,7 +83,7 @@ class AboutPage extends StatelessWidget {
                   children: [
                     // The Title
                     Text(
-                      "Future improvements for next version:",
+                      "Improvements on this version:",
                       style: GoogleFonts.lato(
                         fontSize: 18,
                         fontWeight:
@@ -94,9 +94,10 @@ class AboutPage extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // The List
-                    _buildFutureItem("Multiple book covers."),
-                    _buildFutureItem("Multiple file-extension export."),
-                    _buildFutureItem("CSV/JSON import."),
+                    _buildFutureItem("Added Audiobooks as an option."),
+                    _buildFutureItem("Capitalized Authors, Title and Genre."),
+                    _buildFutureItem("Improved label hints."),
+                    _buildFutureItem("Improved dashboard."),
                   ],
                 ),
               ),

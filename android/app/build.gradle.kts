@@ -51,7 +51,7 @@ android {
         debug {
             // This adds ".debug" to your package name for debug builds
             // e.g., com.example.myapp becomes com.example.myapp.debug
-            applicationIdSuffix ".debug"
+            applicationIdSuffix = ".debug"
         }
         release {
             // TODO: Add your own signing config for the release build.

@@ -123,7 +123,7 @@ class Book {
     DateTime? dateFinished,
     String? coverUrl,
     DateTime? addedOnDate,
-    bool? isAudiobook, // Fixed: was int?
+    bool? isAudiobook,
   }) {
     return Book(
       id: id ?? this.id,
