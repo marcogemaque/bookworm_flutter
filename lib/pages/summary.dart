@@ -227,9 +227,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
             Row(
               children: [
                 // Card 1: Audiobooks

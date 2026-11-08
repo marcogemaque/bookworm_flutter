@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '/data_model/book.dart';
 import '/database_helper.dart';
 import '/pages/edit_book_screen.dart';
 
-import 'package:google_fonts/google_fonts.dart';
-
-// ==========================================
-// 1. THE MAIN DETAIL SCREEN
-// ==========================================
 class BookDetailScreen extends StatefulWidget {
   final Book book;
-
   const BookDetailScreen({super.key, required this.book});
 
   @override
@@ -21,10 +16,27 @@ class BookDetailScreen extends StatefulWidget {
 class BookDetailScreenState extends State<BookDetailScreen> {
   late TextEditingController _notesController;
 
+  List<VocabularyEntry> _vocabList = [];
+  bool _isLoadingVocab = true;
+
   @override
   void initState() {
     super.initState();
     _notesController = TextEditingController(text: widget.book.notes ?? '');
+    _loadVocabulary();
+  }
+
+  Future<void> _loadVocabulary() async {
+    if (widget.book.id == null) return;
+    final entries = await DatabaseHelper.instance.getVocabularyByBook(
+      widget.book.id!,
+    );
+    if (mounted) {
+      setState(() {
+        _vocabList = entries;
+        _isLoadingVocab = false;
+      });
+    }
   }
 
   @override
@@ -33,102 +45,302 @@ class BookDetailScreenState extends State<BookDetailScreen> {
     super.dispose();
   }
 
+  Future<void> _showAddVocabularyDialog() async {
+    // Controllers declared here survive the dialog's lifecycle
+    final wordController = TextEditingController();
+    final defController = TextEditingController();
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Add Vocabulary',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: wordController,
+              decoration: InputDecoration(
+                labelText: 'Word',
+                hintText: 'e.g., Ephemeral',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: defController,
+              decoration: InputDecoration(
+                labelText: 'Definition (Optional)',
+                hintText: 'e.g., Lasting for a very short time',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              maxLines: 3,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (saved == true &&
+        wordController.text.trim().isNotEmpty &&
+        widget.book.id != null) {
+      final newEntry = VocabularyEntry(
+        word: wordController.text.trim(),
+        definition: defController.text.trim().isNotEmpty
+            ? defController.text.trim()
+            : null,
+        bookId: widget.book.id,
+      );
+
+      await DatabaseHelper.instance.insertVocabulary(newEntry);
+
+      if (mounted) {
+        setState(() {
+          _vocabList.add(newEntry);
+        });
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      wordController.dispose();
+      defController.dispose();
+    });
+  }
+
+  Widget _buildVocabularyItem(VocabularyEntry entry) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Word on top - bold and prominent
+                Text(
+                  entry.word,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Definition below - lighter and readable
+                Text(
+                  entry.definition?.isNotEmpty == true
+                      ? entry.definition!
+                      : 'No definition added',
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Delete button aligned to top-right of the word
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+            tooltip: 'Remove word',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () async {
+              if (entry.id != null) {
+                await DatabaseHelper.instance.deleteVocabulary(entry.id!);
+                if (mounted) {
+                  setState(() {
+                    _vocabList.removeWhere((e) => e.id == entry.id);
+                  });
+                }
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVocabularySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Vocabulary',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline, color: Colors.orange),
+              tooltip: 'Add Word',
+              onPressed: _showAddVocabularyDialog,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        if (_isLoadingVocab)
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (_vocabList.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'If you learned new words, tap + to add them!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          )
+        else
+          Container(
+            constraints: const BoxConstraints(maxHeight: 200),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 12.0,
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: _vocabList.length,
+              itemBuilder: (context, index) =>
+                  _buildVocabularyItem(_vocabList[index]),
+            ),
+          ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Nice soft background color
       backgroundColor: Colors.orange.shade100,
-
       appBar: AppBar(
         title: Text(
           widget.book.title,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Color(0xFFFDB975),
+        backgroundColor: const Color(0xFFFDB975),
         foregroundColor: Colors.black87,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         actions: [
-          // DELETE BOOK BUTTON
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.black),
             tooltip: 'Delete Book',
             onPressed: () async {
-              // 1. Show the confirmation dialog
-              final bool? confirmDelete = await showDialog<bool>(
+              final confirm = await showDialog<bool>(
                 context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Delete Book'),
-                    content: const Text(
-                      'Are you sure you want to delete this book? This action cannot be undone.',
+                builder: (c) => AlertDialog(
+                  title: const Text('Delete Book'),
+                  content: const Text('Are you sure? This cannot be undone.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(c, false),
+                      child: const Text('Cancel'),
                     ),
-                    actions: <Widget>[
-                      // Cancel button
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
+                    TextButton(
+                      onPressed: () => Navigator.pop(c, true),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.red),
                       ),
-                      // Confirm delete button
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                    ),
+                  ],
+                ),
               );
-              // 2. Proceed only if the user explicitly tapped "Delete" (returns true)
-              if (confirmDelete == true) {
-                final updatedBook = widget.book.copyWith(
-                  notes: _notesController.text.trim().isNotEmpty
-                      ? _notesController.text.trim()
-                      : null,
+              if (confirm == true) {
+                await DatabaseHelper.instance.deleteBook(
+                  widget.book.copyWith(
+                    notes: _notesController.text.trim().isNotEmpty
+                        ? _notesController.text.trim()
+                        : null,
+                  ),
                 );
-                await DatabaseHelper.instance.deleteBook(updatedBook);
-                if (context.mounted) {
-                  Navigator.pop(context, true);
-                }
+                if (context.mounted) Navigator.pop(context, true);
               }
             },
           ),
-          // SAVE NOTES BUTTON
           IconButton(
             icon: const Icon(Icons.save, color: Colors.white),
             tooltip: 'Save Notes',
             onPressed: () async {
-              final updatedBook = widget.book.copyWith(
-                notes: _notesController.text.trim().isNotEmpty
-                    ? _notesController.text.trim()
-                    : null,
+              await DatabaseHelper.instance.updateBook(
+                widget.book.copyWith(
+                  notes: _notesController.text.trim().isNotEmpty
+                      ? _notesController.text.trim()
+                      : null,
+                ),
               );
-              await DatabaseHelper.instance.updateBook(updatedBook);
               if (context.mounted) {
-                Navigator.pop(context, true);
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Notes saved!')));
               }
             },
           ),
-          // EDIT BOOK DETAILS BUTTON
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Colors.white),
             tooltip: 'Edit Book Details',
             onPressed: () async {
-              final didChange = await showDialog<bool>(
+              final changed = await showDialog<bool>(
                 context: context,
-                builder: (dialogContext) => EditBookDialog(book: widget.book),
+                builder: (c) => EditBookDialog(book: widget.book),
               );
-              if (didChange == true && context.mounted) {
+              if (changed == true && context.mounted)
                 Navigator.pop(context, true);
-              }
             },
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +348,6 @@ class BookDetailScreenState extends State<BookDetailScreen> {
             Text(
               'By ${widget.book.authors?.join(', ') ?? 'Unknown'}',
               style: GoogleFonts.playfairDisplay(
-                // Replace 'poppins' with your chosen font
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -150,26 +361,28 @@ class BookDetailScreenState extends State<BookDetailScreen> {
               ),
             ),
             const Divider(height: 32),
+            _buildVocabularySection(),
             Text(
-              // 'const' is removed
               'My Notes',
               style: GoogleFonts.playfairDisplay(
-                // Replace 'poppins' with your chosen font
                 fontSize: 21,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: 300,
+                maxHeight: MediaQuery.of(context).size.height * 0.4,
+              ),
               child: TextField(
                 controller: _notesController,
                 maxLines: null,
-                expands: true,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
                   hintText:
                       'To persist your notes, click on the save button above!',
-                  hintStyle: TextStyle(color: Colors.black),
+                  hintStyle: TextStyle(color: Colors.black54),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -179,6 +392,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),

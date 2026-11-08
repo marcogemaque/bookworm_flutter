@@ -125,3 +125,40 @@ List<Book> getMockBooks() {
     ),
   ];
 }
+
+List<VocabularyEntry> getMockVocabulary() {
+  final now = DateTime.now();
+
+  return [
+    VocabularyEntry(
+      word: 'Epistolary',
+      definition: 'A novel, play, or other literary work written in the form of a series of letters.',
+      bookId: 1, // Links to "This is How You Lose the Time War"
+    ),
+    VocabularyEntry(
+      word: 'Doublethink',
+      definition: 'The act of simultaneously accepting two mutually contradictory beliefs as correct.',
+      bookId: 4, // Links to "1984"
+    ),
+    VocabularyEntry(
+      word: 'Orwellian',
+      definition: 'Situations, ideas, or societal conditions that George Orwell identified as destructive to a free society.',
+      bookId: 4, // Links to "1984"
+    ),
+    VocabularyEntry(
+      word: 'Cognitive Revolution',
+      definition: 'The change in human behavior and thought that took place in Europe around 70,000 years ago.',
+      bookId: 6, // Links to "Sapiens"
+    ),
+    VocabularyEntry(
+      word: 'Ephemeral',
+      definition: 'Lasting for a very short time.',
+      bookId: 10, // Links to "Meditations"
+    ),
+    VocabularyEntry(
+      word: 'Amor Fati',
+      definition: 'A Latin phrase that may be translated as "love of fate" or "love of one\'s fate".',
+      bookId: 10, // Links to "Meditations"
+    ),
+  ];
+}

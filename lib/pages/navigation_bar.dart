@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:bookworm/pages/homepage.dart';
 import 'package:bookworm/pages/summary.dart';
 import 'package:bookworm/pages/export_data.dart';
+import 'package:bookworm/pages/vocabulary.dart';
 
 // my other pages
 import 'bug_report_page.dart';
@@ -119,7 +120,7 @@ class AppScaffold extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.bug_report),
               title: const Text('Bug Report'),
-              selected: selectedIndex == 3,
+              selected: selectedIndex == 2,
               onTap: () => _navigateTo(
                 context,
                 const BugReportPage(),
@@ -132,6 +133,15 @@ class AppScaffold extends StatelessWidget {
               onTap: () => _navigateTo(
                 context,
                 const ExportDataScreen(),
+              ), // Replace with your actual page
+            ),
+            ListTile(
+              leading: const Icon(Icons.book_rounded),
+              title: const Text('Vocabulary'),
+              selected: selectedIndex == 4,
+              onTap: () => _navigateTo(
+                context,
+                const VocabularyPage(),
               ), // Replace with your actual page
             ),
           ],

@@ -42,7 +42,6 @@ class Book {
       'dateFinished': dateFinished?.millisecondsSinceEpoch,
       'coverUrl': coverUrl,
       'addedOnDate': addedOnDate.millisecondsSinceEpoch,
-      // Safely store null as null, otherwise 1 or 0
       'isAudiobook': isAudiobook == null ? null : (isAudiobook! ? 1 : 0),
     };
   }
@@ -138,6 +137,28 @@ class Book {
       coverUrl: coverUrl ?? this.coverUrl,
       addedOnDate: addedOnDate ?? this.addedOnDate,
       isAudiobook: isAudiobook ?? this.isAudiobook,
+    );
+  }
+}
+
+class VocabularyEntry {
+  final int? id;
+  final String word;
+  final String? definition;
+  final int? bookId;
+
+  VocabularyEntry({this.id, required this.word, this.definition, this.bookId});
+
+  Map<String, dynamic> toMap() {
+    return {'id': id, 'word': word, 'definition': definition, 'bookId': bookId};
+  }
+
+  factory VocabularyEntry.fromMap(Map<String, dynamic> map) {
+    return VocabularyEntry(
+      id: map['id'],
+      word: map['word'],
+      definition: map['definition'],
+      bookId: map['bookId'],
     );
   }
 }

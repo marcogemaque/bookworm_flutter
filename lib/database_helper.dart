@@ -6,8 +6,9 @@ import 'package:bookworm/mock_data/mock_data.dart';
 
 class DatabaseHelper {
   // Singleton
-  static final int _dbVersion = 2;
+  static final int _dbVersion = 3;
   static final String _tableName = 'books';
+  static final String _vocabTableName = 'vocabulary';
   static final DatabaseHelper instance = DatabaseHelper._init();
   DatabaseHelper._init();
 
@@ -38,6 +39,16 @@ class DatabaseHelper {
         'ALTER TABLE $_tableName ADD COLUMN isAudiobook INTEGER',
       );
     }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE $_vocabTableName (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          word TEXT NOT NULL,
+          definition TEXT,
+          bookId INTEGER,
+        )
+      ''');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -54,7 +65,16 @@ class DatabaseHelper {
         dateFinished INTEGER,
         coverUrl TEXT,
         addedOnDate INTEGER NOT NULL,
-        isAudiobook INTEGER -- ✅ FIX 4: Added to CREATE TABLE for NEW users
+        isAudiobook INTEGER
+      )
+    ''');
+    // added for v3 -> new vocab table
+    await db.execute('''
+      CREATE TABLE $_vocabTableName (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        word TEXT NOT NULL,
+        definition TEXT,
+        bookId INTEGER
       )
     ''');
   }
@@ -115,6 +135,11 @@ class DatabaseHelper {
         for (final book in mockBooks) {
           await insertBook(book);
         }
+        //now we create the mock vocabulary we had
+        final mockVocab = getMockVocabulary();
+        for (final vocab in mockVocab) {
+          await insertVocabulary(vocab);
+        }
         debugPrint('Successfully seeded ${mockBooks.length} mock books.');
       }
     } catch (e) {
@@ -140,5 +165,55 @@ class DatabaseHelper {
 
     final sortedYears = years.toList()..sort();
     return sortedYears;
+  }
+
+  Future<int> insertVocabulary(VocabularyEntry entry) async {
+    final db = await database;
+    return await db.insert(_vocabTableName, entry.toMap());
+  }
+
+  Future<List<VocabularyEntry>> getAllVocabularyEntries() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      _vocabTableName,
+      orderBy: 'id DESC',
+    );
+    return List.generate(maps.length, (i) => VocabularyEntry.fromMap(maps[i]));
+  }
+
+  Future<Map<String, List<String>>> getVocabularyAsTwoLists() async {
+    final entries = await getAllVocabularyEntries();
+
+    final List<String> wordsList = entries.map((entry) => entry.word).toList();
+
+    final List<String> definitionsList = entries
+        .map((entry) => entry.definition ?? 'No definition provided')
+        .toList();
+
+    return {'words': wordsList, 'definitions': definitionsList};
+  }
+
+  Future<List<String>> getUniqueVocabularyWords() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT DISTINCT word FROM $_vocabTableName ORDER BY word ASC
+    ''');
+    return maps.map((map) => map['word'] as String).toList();
+  }
+
+  Future<int> deleteVocabulary(int id) async {
+    final db = await database;
+    return await db.delete(_vocabTableName, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<VocabularyEntry>> getVocabularyByBook(int bookId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      _vocabTableName,
+      where: 'bookId = ?',
+      whereArgs: [bookId],
+      orderBy: 'id DESC',
+    );
+    return List.generate(maps.length, (i) => VocabularyEntry.fromMap(maps[i]));
   }
 }

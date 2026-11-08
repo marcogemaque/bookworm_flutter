@@ -214,8 +214,8 @@ class AddBookDialogState extends State<AddBookDialog> {
               controller: _authorController,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Authors: ie. Terry Pratchett, Neil Gaiman',
-                hintText: 'e.g. Neil Gaiman, Terry Pratchett',
+                labelText: 'Authors: ie. Terry Pratchett, Rincewind',
+                hintText: 'e.g. Rincewind, Terry Pratchett',
               ),
             ),
             const SizedBox(height: 10),
