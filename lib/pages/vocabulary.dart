@@ -23,6 +23,7 @@ class VocabularyPage extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
+            textAlign: TextAlign.left, // Explicitly force left alignment
           ),
           const SizedBox(height: 4),
           Text(
@@ -34,7 +35,10 @@ class VocabularyPage extends StatelessWidget {
               height: 1.5,
               color: Colors.black87,
             ),
+            textAlign: TextAlign.left, // Explicitly force left alignment
           ),
+          // Added a subtle divider between words for better readability
+          const Divider(height: 32, color: Colors.black12),
         ],
       ),
     );
@@ -47,13 +51,17 @@ class VocabularyPage extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          // ✅ CRITICAL FIX: Changed from .center to .stretch
+          // This forces the Card to be full-width, preventing short words
+          // from making the card narrow and appear "centered" on the screen.
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 32),
+
             // ✅ The Vocabulary List Card
             Card(
               elevation: 2,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              // Removed horizontal margin so it stretches perfectly within the 24.0 padding
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -116,6 +124,8 @@ class VocabularyPage extends StatelessWidget {
 
                         // List of Entries
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment
+                              .start, // Ensure list is left-aligned
                           children: entries.map((entry) {
                             return _buildVocabularyItem(
                               entry.word,
