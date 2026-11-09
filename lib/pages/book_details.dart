@@ -39,6 +39,95 @@ class BookDetailScreenState extends State<BookDetailScreen> {
     }
   }
 
+  Future<void> _showEditVocabularyDialog(VocabularyEntry entry) async {
+    if (entry.id == null) return;
+
+    final wordController = TextEditingController(text: entry.word);
+    final defController = TextEditingController(text: entry.definition ?? '');
+
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Edit Vocabulary',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: wordController,
+              decoration: InputDecoration(
+                labelText: 'Word',
+                hintText: 'e.g., Ephemeral',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: defController,
+              decoration: InputDecoration(
+                labelText: 'Definition (Optional)',
+                hintText: 'e.g., Lasting for a very short time',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              maxLines: 3,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (saved == true && wordController.text.trim().isNotEmpty) {
+      final updatedEntry = VocabularyEntry(
+        id: entry.id,
+        word: wordController.text.trim(),
+        definition: defController.text.trim().isNotEmpty
+            ? defController.text.trim()
+            : null,
+        bookId: entry.bookId,
+      );
+
+      await DatabaseHelper.instance.updateVocabulary(updatedEntry);
+
+      if (mounted) {
+        setState(() {
+          final index = _vocabList.indexWhere((e) => e.id == entry.id);
+          if (index != -1) {
+            _vocabList[index] = updatedEntry;
+          }
+        });
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      wordController.dispose();
+      defController.dispose();
+    });
+  }
+
   @override
   void dispose() {
     _notesController.dispose();
@@ -46,7 +135,6 @@ class BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Future<void> _showAddVocabularyDialog() async {
-    // Controllers declared here survive the dialog's lifecycle
     final wordController = TextEditingController();
     final defController = TextEditingController();
 
@@ -108,7 +196,7 @@ class BookDetailScreenState extends State<BookDetailScreen> {
     if (saved == true &&
         wordController.text.trim().isNotEmpty &&
         widget.book.id != null) {
-      final newEntry = VocabularyEntry(
+      final tempEntry = VocabularyEntry(
         word: wordController.text.trim(),
         definition: defController.text.trim().isNotEmpty
             ? defController.text.trim()
@@ -116,10 +204,16 @@ class BookDetailScreenState extends State<BookDetailScreen> {
         bookId: widget.book.id,
       );
 
-      await DatabaseHelper.instance.insertVocabulary(newEntry);
+      final newId = await DatabaseHelper.instance.insertVocabulary(tempEntry);
 
       if (mounted) {
         setState(() {
+          final newEntry = VocabularyEntry(
+            id: newId,
+            word: tempEntry.word,
+            definition: tempEntry.definition,
+            bookId: tempEntry.bookId,
+          );
           _vocabList.add(newEntry);
         });
       }
@@ -132,57 +226,82 @@ class BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   Widget _buildVocabularyItem(VocabularyEntry entry) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Word on top - bold and prominent
-                Text(
-                  entry.word,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => _showEditVocabularyDialog(entry),
+                child: Padding(
+                  padding: const EdgeInsets.all(
+                    4.0,
+                  ), // Gives a better tap hit area
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Word on top - bold and prominent
+                      Text(
+                        entry.word,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Definition below - lighter and readable
+                      Text(
+                        entry.definition?.isNotEmpty == true
+                            ? entry.definition!
+                            : 'No definition added',
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Subtle hint that the card is editable
+                      Text(
+                        'Tap to edit',
+                        style: GoogleFonts.lato(
+                          fontSize: 12,
+                          color: Colors.orange.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
-                // Definition below - lighter and readable
-                Text(
-                  entry.definition?.isNotEmpty == true
-                      ? entry.definition!
-                      : 'No definition added',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          // Delete button aligned to top-right of the word
-          IconButton(
-            icon: const Icon(Icons.close, size: 18, color: Colors.grey),
-            tooltip: 'Remove word',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () async {
-              if (entry.id != null) {
-                await DatabaseHelper.instance.deleteVocabulary(entry.id!);
-                if (mounted) {
-                  setState(() {
-                    _vocabList.removeWhere((e) => e.id == entry.id);
-                  });
+            // Delete button aligned to top-right
+            IconButton(
+              icon: const Icon(Icons.close, size: 20, color: Colors.grey),
+              tooltip: 'Remove word',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () async {
+                if (entry.id != null) {
+                  await DatabaseHelper.instance.deleteVocabulary(entry.id!);
+                  if (mounted) {
+                    setState(() {
+                      _vocabList.removeWhere((e) => e.id == entry.id);
+                    });
+                  }
                 }
-              }
-            },
-          ),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -334,8 +453,9 @@ class BookDetailScreenState extends State<BookDetailScreen> {
                 context: context,
                 builder: (c) => EditBookDialog(book: widget.book),
               );
-              if (changed == true && context.mounted)
+              if (changed == true && context.mounted) {
                 Navigator.pop(context, true);
+              }
             },
           ),
         ],

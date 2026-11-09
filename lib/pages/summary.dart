@@ -69,12 +69,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
     final Map<String, int> genreCounts = {};
 
     for (final book in books) {
-      if (book.genre != null) {
-        for (final g in book.genre) {
-          final normalized = g.trim().toLowerCase();
-          if (normalized.isNotEmpty) {
-            genreCounts[normalized] = (genreCounts[normalized] ?? 0) + 1;
-          }
+      for (final g in book.genre) {
+        final normalized = g.trim().toLowerCase();
+        if (normalized.isNotEmpty) {
+          genreCounts[normalized] = (genreCounts[normalized] ?? 0) + 1;
         }
       }
     }

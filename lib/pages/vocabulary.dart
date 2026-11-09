@@ -10,35 +10,29 @@ import 'package:bookworm/data_model/book.dart';
 class VocabularyPage extends StatelessWidget {
   const VocabularyPage({super.key});
 
-  // ✅ Single widget: Word in bold, meaning right next to it in normal text
   Widget _buildVocabularyItem(String word, String? definition) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment
-            .start, // Keeps word at the top if definition wraps
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. The Word (Bold)
           Text(
             word,
             style: GoogleFonts.playfairDisplay(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(width: 8), // Gap between word and meaning
-          // 2. The Meaning (Normal text, expands and wraps automatically)
-          Expanded(
-            child: Text(
-              definition?.isNotEmpty == true
-                  ? definition!
-                  : "No meaning provided",
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                height: 1.5,
-                color: Colors.black87,
-              ),
+          const SizedBox(height: 4),
+          Text(
+            definition?.isNotEmpty == true
+                ? definition!
+                : "No meaning provided",
+            style: GoogleFonts.lato(
+              fontSize: 16,
+              height: 1.5,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -56,7 +50,7 @@ class VocabularyPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 32),
-            // ✅ KEPT: The Vocabulary List Card
+            // ✅ The Vocabulary List Card
             Card(
               elevation: 2,
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -119,6 +113,8 @@ class VocabularyPage extends StatelessWidget {
                             ),
                           );
                         }
+
+                        // List of Entries
                         return Column(
                           children: entries.map((entry) {
                             return _buildVocabularyItem(

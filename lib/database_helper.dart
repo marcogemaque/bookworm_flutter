@@ -45,7 +45,7 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           word TEXT NOT NULL,
           definition TEXT,
-          bookId INTEGER,
+          bookId INTEGER
         )
       ''');
     }
@@ -102,7 +102,7 @@ class DatabaseHelper {
     return await db.delete(_tableName, where: "id=?", whereArgs: [book.id]);
   }
 
-  // UPDATE: Updates a book
+  //we added this so people can edit a book
   Future<int> updateBook(Book book) async {
     Database db = await instance.database;
     if (book.id == null) return 0;
@@ -111,6 +111,18 @@ class DatabaseHelper {
       book.toMap(),
       where: 'id = ?',
       whereArgs: [book.id],
+    );
+  }
+
+  //we created this so people can edit a vocabulary word
+  Future<int> updateVocabulary(VocabularyEntry entry) async {
+    Database db = await instance.database;
+    if (entry.id == null) return 0;
+    return await db.update(
+      _vocabTableName,
+      entry.toMap(),
+      where: 'id = ?',
+      whereArgs: [entry.id],
     );
   }
 
