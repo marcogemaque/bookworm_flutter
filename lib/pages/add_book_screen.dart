@@ -22,6 +22,7 @@ class AddBookDialogState extends State<AddBookDialog> {
   DateTime? _selectedEndDate;
 
   int _rating = 0;
+  bool _isAudiobook = false;
   bool _isLoading = false;
 
   @override
@@ -172,6 +173,7 @@ class AddBookDialogState extends State<AddBookDialog> {
         dateStarted: _selectedStartDate,
         dateFinished: _selectedEndDate,
         rating: _rating == 0 ? null : _rating,
+        isAudiobook: _isAudiobook,
         coverUrl: coverUrl,
         addedOnDate: DateTime.now(),
       );
@@ -204,19 +206,26 @@ class AddBookDialogState extends State<AddBookDialog> {
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(labelText: 'Title: ie. Dune'),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _authorController,
+              textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Author 1, Author 2',
+                labelText: 'Authors: ie. Terry Pratchett, Rincewind',
+                hintText: 'e.g. Rincewind, Terry Pratchett',
               ),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: _genreController,
-              decoration: const InputDecoration(labelText: 'Sci-Fi, Horror'),
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Genres: ie. Sci-Fi, Horror',
+                hintText: 'e.g. Sci-Fi, Horror, Comedy',
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -315,6 +324,24 @@ class AddBookDialogState extends State<AddBookDialog> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text(
+                  'Is Audiobook',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: _isAudiobook,
+                  activeThumbColor: Colors.green,
+                  onChanged: (value) => setState(() => _isAudiobook = value),
+                ),
+              ],
             ),
           ],
         ),

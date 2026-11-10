@@ -19,8 +19,9 @@ Open Library API
 Bookworm uses the Open Library API (operated by the Internet Archive) to fetch book cover images. When you add a book, the app sends the book title and author to Open Library's servers to retrieve the corresponding cover image.
 Open Library's privacy policy can be found at: https://archive.org/about/terms.php
 We do not send any personal information, reading history, or notes to Open Library—only the book title and author name needed to locate the cover image.
+We do use fonts from Google Fonts, which can request the user's IP. Sadly, since we use this service, that data does get sent.
 Data Storage and Security
-All your personal reading data is stored locally on your device using an encrypted database. We do not:
+All your personal reading data is stored locally on your device using a sqlite3 database. We do not:
 Collect analytics or usage data
 Store your information on external servers
 Share your data with third parties
